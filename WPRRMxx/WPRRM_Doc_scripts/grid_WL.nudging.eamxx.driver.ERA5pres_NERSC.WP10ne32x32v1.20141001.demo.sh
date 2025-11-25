@@ -157,5 +157,4 @@ done #im
 # exit 1
 done #iy
 rm -rf ${drc_out}/tmp/
-rm -rf ${drc_out}/
 
