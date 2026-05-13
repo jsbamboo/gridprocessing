@@ -1,0 +1,50 @@
+# =========================
+# macOS
+# =========================
+.DS_Store
+
+# =========================
+# LaTeX intermediate files
+# =========================
+*.aux
+*.bbl
+*.blg
+*.bcf
+*.fdb_latexmk
+*.fls
+*.fmt
+*.fot
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.xdv
+
+# latexmk
+*.latexmk
+
+# minted/listings/cache
+_minted*
+*.pyg
+
+# temporary
+*.tmp
+*.temp
+
+# backup/editor
+*~
+*.swp
+*.swo
+
+# =========================
+# Keep source/output files
+# =========================
+!*.tex
+!*.bib
+!*.png
+!*.pdf
