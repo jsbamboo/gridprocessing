@@ -1,0 +1,2409 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EAMxx 3.25 km Chile RRM Technical Note</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #17202a;
+      --muted: #5f6b7a;
+      --border: #d8dee8;
+      --code-bg: #f6f8fa;
+      --link: #0645ad;
+    }
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.58;
+    }
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 40px 64px;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      line-height: 1.25;
+      margin: 1.5em 0 0.55em;
+      color: #111827;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-top: 0;
+      padding-bottom: 0.35em;
+      border-bottom: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.45rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.2em;
+    }
+    h3 { font-size: 1.18rem; }
+    p { margin: 0.8em 0; }
+    a { color: var(--link); }
+    code {
+      background: var(--code-bg);
+      border-radius: 4px;
+      padding: 0.12em 0.32em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    pre {
+      overflow-x: auto;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 16px;
+      line-height: 1.45;
+    }
+    pre code {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      font-size: 0.88rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0 1.4em;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      vertical-align: top;
+    }
+    th {
+      background: #f1f4f8;
+      text-align: left;
+      font-weight: 650;
+    }
+    ul {
+      padding-left: 1.45rem;
+      margin: 0.55em 0 1em;
+    }
+    .toc {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fbfcfe;
+      padding: 14px 18px;
+      margin: 1.2em 0 2em;
+    }
+    .toc h2 {
+      border: 0;
+      padding: 0;
+      margin: 0 0 0.5em;
+      font-size: 1.05rem;
+    }
+    .toc ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+    .toc li {
+      break-inside: avoid;
+      margin: 0.25em 0;
+    }
+    .toc .toc-h3 {
+      padding-left: 1.1em;
+      font-size: 0.94rem;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1.1em 0;
+    }
+    @media (max-width: 760px) {
+      main {
+        padding: 22px 18px 44px;
+      }
+      body {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+<nav class="toc" aria-label="Table of contents">
+<h2>Contents</h2>
+<ul>
+<li class="toc-h2"><a href="#introduction">Introduction</a></li>
+<li class="toc-h2"><a href="#usage-note">Usage Note</a></li>
+<li class="toc-h2"><a href="#resources">Resources</a></li>
+<li class="toc-h2"><a href="#prepare-e3sm-codebase-for-standalone-tools">Prepare E3SM codebase for standalone tools</a></li>
+<li class="toc-h2"><a href="#rrm-grid-design">RRM grid design</a></li>
+<li class="toc-h3"><a href="#rrm-exodus-mesh">RRM exodus mesh</a></li>
+<li class="toc-h3"><a href="#mapping-and-domain-files">mapping and domain files</a></li>
+<li class="toc-h3"><a href="#topography">topography</a></li>
+<li class="toc-h3"><a href="#land-surface-data">land surface data</a></li>
+<li class="toc-h2"><a href="#initial-conditions">Initial conditions</a></li>
+<li class="toc-h3"><a href="#atmosphere-ic">atmosphere IC</a></li>
+<li class="toc-h3"><a href="#land-ic">land IC</a></li>
+<li class="toc-h2"><a href="#model-configurations-cime-xml">Model configurations (CIME xml)</a></li>
+<li class="toc-h3"><a href="#prepare-e3sm-codebase-for-simulations">prepare E3SM codebase for simulations</a></li>
+<li class="toc-h3"><a href="#add-xml-settings-for-grid">add xml settings for grid</a></li>
+<li class="toc-h3"><a href="#add-xml-setting-for-compset">add xml setting for compset</a></li>
+<li class="toc-h2"><a href="#boundary-conditions">Boundary conditions</a></li>
+<li class="toc-h3"><a href="#create-lower-bl-sst-ice-cover">create lower BL (SST, ice cover)</a></li>
+<li class="toc-h3"><a href="#create-lateral-bl-nudging-files">create lateral BL (nudging files)</a></li>
+<li class="toc-h3"><a href="#output-yaml">output YAML</a></li>
+<li class="toc-h3"><a href="#user-namelists-and-runscript">user namelists and runscript</a></li>
+<li class="toc-h2"><a href="#references">References</a></li>
+</ul>
+</nav>
+<h1 id="eamxx-325-km-chile-rrm-technical-note">EAMxx 3.25 km Chile RRM Technical Note</h1>
+<p><em>Converted from <code>Chile_doc.tex</code> for Markdown.</em></p>
+<p><strong>Copyright statement:</strong> The codes documented here are basically inherited/modified from previous practices in Resources listed in Table 1 or mentioned in the text, which is not subject to copyright restrictions.</p>
+<h2 id="introduction">Introduction</h2>
+<p>The Chile Convection-Permitting (CP) Regionally Refined Model (RRM) used for Chile is developed based on the Simple Cloud-Resolving E3SM Atmosphere Model (SCREAM) version 1 (EAMxx code) under the United States (U.S) Department of Energy (DOE) Energy Exascale Earth System Model (E3SM) project [Caldwell2021] and the regionally refined model (RRM) configuration [Tang2019, Tang2023, Zhang2024, Bogenschutz2024].</p>
+<p>SCREAM ChileRRM related code changes are located in <a href="https://github.com/jsbamboo/E3SM/tree/jzhang/ChileRRMxx">https://github.com/jsbamboo/E3SM/tree/jzhang/ChileRRMxx</a>. This document is available at <a href="https://github.com/jsbamboo/gridprocessing/tree/ChileRRMxx/Chile">https://github.com/jsbamboo/gridprocessing/tree/ChileRRMxx/Chile</a>.</p>
+<h2 id="usage-note">Usage Note</h2>
+<p>This documentation does not represent best practices and should instead be regarded as a personal user log. Many steps have been simplified to varying degrees, depending on the user&#x27;s specific research priorities.</p>
+<p>The tools used in this record are not necessarily recommended or endorsed. Many steps can be accomplished using different tools depending on personal preference, availability, and the computational environment at the time. The scripts included here are not guaranteed to be out-of-box, especially for new users, e.g., differences in software versions and computing systems may easily lead to errors. Based on personal experience, most such issues can be resolved through self-debugging. Other users have also reported that AI coding tools can help translate between programming languages without significantly increasing workload.</p>
+<p>For reference only.</p>
+<h2 id="resources">Resources</h2>
+<p><strong>Table: Main resources for references.</strong></p>
+<table>
+<thead><tr>
+<th>Category</th>
+<th>Link</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>New grid homepage</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/872579110/Running+E3SM+on+New+Grids">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/872579110/Running+E3SM+on+New+Grids</a></td>
+</tr>
+<tr>
+<td>RRM grid Library</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/3690397775/Library+of+Regionally-Refined+Model+%28RRM%29+Grids">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/3690397775/Library+of+Regionally-Refined+Model+%28RRM%29+Grids</a></td>
+</tr>
+<tr>
+<td>Topography</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/2720202817/Topography+Generation">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/2720202817/Topography+Generation</a></td>
+</tr>
+<tr>
+<td>atm initial condition</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/1002373272/Generate+atm+initial+condition+from+analysis+data">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/1002373272/Generate+atm+initial+condition+from+analysis+data</a></td>
+</tr>
+<tr>
+<td>streamfile</td>
+<td><a href="https://esmci.github.io/cime/versions/ufs_release_v1.1/html/data_models/data-ocean.html">https://esmci.github.io/cime/versions/ufs_release_v1.1/html/data_models/data-ocean.html</a></td>
+</tr>
+<tr>
+<td>Nudging</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/20153276/How+to+perform+nudging+simulations+with+the+regional+refined+model+RRM">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/20153276/How+to+perform+nudging+simulations+with+the+regional+refined+model+RRM</a></td>
+</tr>
+<tr>
+<td>SE grid visualization</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/1210023949/Plotting+data+on+SE+native+grid">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/1210023949/Plotting+data+on+SE+native+grid</a></td>
+</tr>
+<tr>
+<td>TempestRemap algorithm</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/178848194/Recommended+Mapping+Procedures+for+E3SM+Atmosphere+Grids">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/178848194/Recommended+Mapping+Procedures+for+E3SM+Atmosphere+Grids</a></td>
+</tr>
+<tr>
+<td>ncremap</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/754286611/Regridding+E3SM+Data+with+ncremap">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/754286611/Regridding+E3SM+Data+with+ncremap</a></td>
+</tr>
+<tr>
+<td>lnd initial condition</td>
+<td><a href="https://github.com/zarzycki/betacast/tree/master/land-spinup">https://github.com/zarzycki/betacast/tree/master/land-spinup</a></td>
+</tr>
+<tr>
+<td>CARRM v0 Technical Note</td>
+<td><a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/3804299340/SCREAM+California+RRM+v0+Technical+Note">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/3804299340/SCREAM+California+RRM+v0+Technical+Note</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="prepare-e3sm-codebase-for-standalone-tools">Prepare E3SM codebase for standalone tools</h2>
+<pre><code class="language-bash">git clone git@github.com:E3SM-Project/E3SM.git E3SM_tool_250318_notoprad
+git checkout -b jzhang/tools/revert_toprad_250318
+git revert afb3c3221f6c439cfbbe7c4e9725fa014fa44867 567fa1d665a2909266a3ee774e725e97b30a7f05
+vi components/elm/bld/namelist_files/namelist_defaults_tools.xml
+git add components/elm/bld/namelist_files/namelist_defaults_tools.xml
+git rm components/elm/tools/mksurfdata_map/src/mktopradMod.F90
+git revert --continue
+vi components/elm/bld/namelist_files/namelist_defaults.xml
+vi components/elm/bld/namelist_files/namelist_defaults_tools.xml
+git add components/elm/bld/namelist_files/namelist_defaults.xml components/elm/bld/namelist_files/namelist_defaults_tools.xml
+git rm components/elm/tools/mksurfdata_map/src/mktopradMod.F90
+git revert --continue
+git submodule update --init --recursive; git submodule sync --recursive; git submodule update --recursive
+vi components/elm/bld/namelist_files/namelist_defaults_tools.xml # forget something ..
+git add components/elm/bld/namelist_files/namelist_defaults_tools.xml
+git commit --amend </code></pre>
+<h2 id="rrm-grid-design">RRM grid design</h2>
+<p>This section is largely inherited (and simplified) from the SCREAM CARRM v0 Technical Note: <a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/3804299340/SCREAM+California+RRM+v0+Technical+Note">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/3804299340/SCREAM+California+RRM+v0+Technical+Note</a>.</p>
+<p>The main reference page (<a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/872579110/Running+E3SM+on+New+Grids">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/872579110/Running+E3SM+on+New+Grids</a>) is a veritable repository of the entire process of generating RRM grids and the associated files needed to run RRM, down to the specific commands for each step and and installation commands of tools. Due to the rapid development of grid tools, many steps have multiple choices (based on different tools or different packages). For example, for mapping function, TempestRemap, mbtempset and ESMF_Regridweightgen are well encapsulated by ncremap; users can choose which tool commands to use by their preference.</p>
+<p><strong>IMPORTANT NOTE:</strong></p>
+<p>In this task, the authorss also tested a newer and more up-to-date repository (<a href="https://github.com/whannah1/E3SM_grid_support">https://github.com/whannah1/E3SM_grid_support</a>), which can fully replace the following steps under &quot;RRM grid design&quot; in this technical note:</p>
+<ul>
+<li>mapping and domain files</li>
+<li>topography</li>
+</ul>
+<p>It is worth noting that these steps, particularly topography generation, have historically been among the most complicated components of the atmospheric-model RRM grid workflow. Therefore, we believe that the substantial simplification and modernization of both the algorithms and software implementation in this new tool are highly worthwhile to explore. In short, the workflow no longer depends on compiling several standalone Fortran tools (including <em>homme_tool</em> and <em>cube_to_target</em>). In addition, because the tool adopts much simpler algorithms together with the MPI-based mapping tool MBDA, the total runtime is significantly reduced. However, the default MBDA version currently relies on precompiled binaries maintained by the developer on several E3SM-supported machines (including Perlmutter used by the authors), so users only need to directly reference the provided binary executables.</p>
+<p>Nevertheless, the original workflow is still required for other steps, including:</p>
+<ul>
+<li>land surface data</li>
+<li>atmosphere and land initial conditions</li>
+<li>model configurations (xml edits)</li>
+<li>creation of lower and lateral boundary conditions (SST, sea ice cover, nudging files)</li>
+<li>setting YAML files with <em>horizontal_remapper</em> for online remapped output streams</li>
+<li>setting user namelists and run scripts</li>
+</ul>
+<p>Testing records for the new &quot;E3SM_grid_support&quot; tool are documented at: <a href="https://github.com/jsbamboo/E3SM_grid_support/tree/zhang73-perlm-Chile26-b0421">https://github.com/jsbamboo/E3SM_grid_support/tree/zhang73-perlm-Chile26-b0421</a></p>
+<h3 id="rrm-exodus-mesh">RRM exodus mesh</h3>
+<p>The Chile mesh &quot;Chilene32x32v1&quot; is generated by:</p>
+<ul>
+<li>using SQuadGen to get the RRM grid and tempestremap to get the pg2 grid and SCRIP files: <code>../scripts/grid_WL.00.SQuadGen_TR.01.gen_mesh_pg2_scrip.sh</code></li>
+<li>using NCL to plot the native grid of Chile RRM: <code>../scripts/grid_WL.01.SQuadGen_NCL.02.plot_pg2_scrip.ncl</code></li>
+</ul>
+<p><code>../scripts/grid_WL.00.SQuadGen_TR.01.gen_mesh_pg2_scrip.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+RRMgrid=Chilene32x32v1
+
+build_method=&quot;manual&quot;
+build_method=&quot;e3sm_unified&quot;
+
+if [ &quot;${build_method}&quot; = &quot;manual&quot; ];
+# old: install it by yourself
+SQuadGen_dir=&quot;/p/lustre2/zhang73/GitTmp/SourceCode&quot;
+
+cd ${SQuadGen_dir}/../
+git clone git@github.com:ClimateGlobalChange/squadgen.git squadgen-v1.2.2; cd squadgen-v1.2.2
+vi /p/lustre2/zhang73/GitTmp/E3SM_tool_250318_notoprad/cime_config/machines/config_machines.xml  # find NETCDF_FORTRAN_PATH for specific mach in E3SM
+vi src/Makefile # copy NETCDF_FORTRAN_PATH
+make all
+
+SQuadGen_bin=${SQuadGen_dir}/SQuadGen
+
+# for nco, ncl, tempest-remap
+conda create --name all_stable26 -c conda-forge nco ncl ncview cdo imagemagick tempest-remap
+conda activate all_stable26
+fi 
+
+if [ &quot;${build_method}&quot; = &quot;e3sm_unified&quot; ];
+# new Chris G: We use SQuadGen which is available as part of E3SM Unified and refine over a rotated rectangular region using command line options:
+source /usr/workspace/e3sm/apps/e3sm-unified/load_latest_e3sm_unified_dane.sh  # need e3sm group
+module load gcc/13.3.1
+module load mvapich2/2.3.7
+module load ncl
+
+SQuadGen_bin=SQuadGen
+fi 
+
+# if use e3sm_unified conda env 
+${SQuadGen_bin} \
+--output Chilene32x32v1.g \
+--lat_ref -30.25 --lon_ref 289.5 \
+--refine_rect &quot;286,-17.5,293,-43,5&quot; --refine_level 5 \
+--x_rotate -6 \
+--resolution 32 --smooth_type SPRING
+
+GenerateVolumetricMesh --in Chilene32x32v1.g --out Chilene32x32v1pg2.g --np 2 --uniform
+ConvertMeshToSCRIP --in Chilene32x32v1.g --out Chilene32x32v1_scrip.nc
+ConvertMeshToSCRIP --in Chilene32x32v1pg2.g --out Chilene32x32v1pg2_scrip.nc
+
+# rsync -av Chilene32x32v1.g $DIN_LOC_ROOT/atm/cam/inic/homme/</code></pre>
+<p>The mesh of Chile RRMs are shown in Fig. 1, plotted using NCL:</p>
+<p><code>../scripts/grid_WL.01.SQuadGen_NCL.02.plot_pg2_scrip.ncl</code></p>
+<pre><code class="language-bash">ncl lat_width=60 lon_width=30 mpCenterLatF=-30.25 mpCenterLonF=289.5 &#x27;RRMgrid=&quot;Chilene32x32v1&quot;&#x27; /p/lustre2/zhang73/GitTmp/SourceCode/gridprocessing/Chile/scripts/grid_WL.01.SQuadGen_NCL.02.plot_pg2_scrip.ncl
+
+;======================================================================
+; geo_4.ncl
+;
+; Concepts illustrated:
+;   - Plotting data on a high-res geodesic mesh
+;   - Setting the cell bounds for an unstructured mesh
+;   - Using opacity to emphasize or subdue overlain features
+;======================================================================
+; This script requires NCL V6.6.0 or later to run, since it uses
+; an updated version of gsn_coordinates.
+;======================================================================
+
+begin
+
+mach=&quot;LC&quot;
+mach=&quot;perlm&quot;
+
+if(mach.eq.&quot;LC&quot;)then
+    host_proc=&quot;/p/lustre2/zhang73&quot;
+else
+    host_proc=&quot;/global/cfs/cdirs/e3sm/zhang73&quot;
+end if 
+
+;!!!!!!!!!!!!!!!!!!!! User Need to Change !!!!!!!!!!!!!!!!!!!!!
+  filepath      = (/host_proc+&quot;/grids2/&quot;+RRMgrid+&quot;/&quot;/)
+  filename      = (/&quot;&quot;+RRMgrid+&quot;pg2_scrip.nc&quot;/)
+  path_plots = host_proc+&quot;/plots/&quot;
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  fig_out = path_plots+&quot;area_pdf.&quot;+filename(0)
+  print(&quot;----- making pg2_scrip plot: &quot;+fig_out+&quot;.pdf ... ----- &quot;)
+  wks = gsn_open_wks(&quot;pdf&quot;,fig_out)
+
+  draw_SP = False
+  draw_mark = False
+
+do ifile=0,dimsizes(filename)-1
+  f = addfile(filepath(ifile)+filename(ifile),&quot;r&quot;)
+
+  r2d = get_r2d(&quot;float&quot;)
+  cx = f-&gt;grid_corner_lon(::1,:) ;* r2d
+  cy = f-&gt;grid_corner_lat(::1,:) ;* r2d
+
+  dim=dimsizes(cx) ;/grid_size, grid_corners/
+
+  ke=new(dim(0), float)
+  ke=1
+  ke(::2)=2
+  ke(::3)=4
+  ke@lon1d := f-&gt;grid_center_lon ;* r2d
+  ke@lat1d := f-&gt;grid_center_lat ;* r2d
+  grid_area := f-&gt;grid_area
+
+  ;---Check if the grid size is as expected 
+  re   = 6.37122e06
+  grid_length_km := sqrt(grid_area)*re/1e3
+  printMinMax(grid_length_km,0)
+  print(num(grid_length_km.lt.5)+&quot; of total: &quot;+dimsizes(grid_area))
+  ; plot=gsn_csm_xy(wks, area_pdf@bin_center, area_pdf, True)
+  ; exit
+
+  res                         = True
+  res@gsnMaximize             = True
+  res@gsnRightString          = &quot;&quot;
+  res@gsnLeftString           = &quot;&quot;
+  res@gsnCenterString         = &quot;&quot; 
+
+  res@gsnDraw                 = False
+  res@gsnFrame                = False
+
+  res@mpProjection            = &quot;Orthographic&quot;     ; choose projection
+  res@mpCenterLatF            = mpCenterLatF
+  res@mpCenterLonF            = mpCenterLonF
+  res@mpOutlineOn             = False
+  res@mpPerimOn               = False
+  res@mpFillOn                = True
+  res@mpGridAndLimbOn         = False
+  res@mpGridMaskMode          = &quot;MaskLand&quot;
+
+  res@mpLandFillColor         = &quot;tan&quot;
+  res@mpOceanFillColor        = &quot;LightBlue&quot;
+  res@mpInlandWaterFillColor  = &quot;Blue&quot;
+
+  ; res@tiMainString            = &quot;Contours of data on high-res geodesic mesh (&quot; +\
+  ;                                dimsizes(ke) + &quot; cells)&quot;
+  res@tiMainFontHeightF       = 0.02
+  res@tiMainFont              = &quot;helvetica&quot;
+  ; plot = gsn_csm_contour_map(wks,ke,res)
+
+  ; res@tiMainString            =  filename(ifile) + &quot; (&quot;+ dimsizes(ke) + &quot; cells)&quot;
+  res@tiMainString            =  &quot;&quot; ;&quot;CA RRM grids (CA_ne32_x32)&quot;
+  ; plot = gsn_csm_contour_map(wks,ke,res)
+
+  gsres                            = True
+  gsres@gsnCoordsMeshLatBounds     = cy
+  gsres@gsnCoordsMeshLonBounds     = cx
+  gsres@gsnCoordsMeshClosePolygons = True      ; necessary to get fully closed polygons
+  gsres@gsMarkerColor              = &quot;Blue&quot;   ; color to use for cell centers
+  gsres@gsLineColor                = &quot;gray30&quot;   ; color to use for cell edges
+  gsres@gsMarkerSizeF              = 1.0
+  gsres@gsLineThicknessF           = 0.4;0.2
+
+  res2=res
+  projection_type=&quot;CylindricalEquidistant&quot;
+  res2@mpProjection=projection_type
+  res2@mpProjection=&quot;Orthographic&quot;
+  plot = gsn_csm_map(wks, res2)
+  ;---plot the first global mesh
+  gsn_coordinates(wks,plot,(/ke/),gsres)
+
+  ;---Zoom into the region of interest
+  res@mpLimitMode                 = &quot;LatLon&quot;
+  res@mpCenterLatF                = mpCenterLatF
+  res@mpCenterLonF                = mpCenterLonF
+  res@mpMinLatF                   = res@mpCenterLatF-lat_width/2.
+  res@mpMaxLatF                   = res@mpCenterLatF+lat_width/2.
+  res@mpMinLonF                   = res@mpCenterLonF-lon_width/2.
+  res@mpMaxLonF                   = res@mpCenterLonF+lon_width/2.
+
+  res@mpOutlineOn                 = True
+  res@mpOutlineBoundarySets       = &quot;USStates&quot; ;&quot;USStates&quot;
+  res@mpLandFillColor             = &quot;gray85&quot;
+  res@mpOceanFillColor            = -1
+  res@mpInlandWaterFillColor      = -1
+
+  res@mpUSStateLineColor          = &quot;green&quot;
+  res@mpUSStateLineThicknessF     = 3.
+  res@mpNationalLineColor         = res@mpUSStateLineColor
+  res@mpNationalLineThicknessF    = res@mpUSStateLineThicknessF * 2.0
+  res@mpGeophysicalLineColor      = res@mpUSStateLineColor
+  res@mpGeophysicalLineThicknessF = res@mpUSStateLineThicknessF
+  res@mpCountyLineColor           = res@mpUSStateLineColor
+  res@mpDataBaseVersion           = &quot;Ncarg4_1&quot;
+
+  plot = gsn_csm_map(wks, res)
+  ;---plot the second zoom in mesh
+  gsn_coordinates(wks,plot,(/ke/),gsres)
+
+  delete([/cx,cy,ke,res,res2,gsres/])
+end do ;ifile
+
+end</code></pre>
+<p><img src="./area_pdf.Chilene32x32v1pg2_scrip.p2.png" alt="Regionally refined mesh for Chile."></p>
+<p><em>Figure: Regionally refined mesh for Chile.</em></p>
+<h3 id="mapping-and-domain-files">mapping and domain files</h3>
+<p>Chile model grid for atm, land, ocnice are all on Chilene32x32v1, while the river transport model is on a regular latitude-longitude grid with spacing of 0.125°. The mapping files are used for OCN2ATM ATM2ROF (flux, state/vector) and LND2ROF/ROF2LND (flux). All use FV-&gt; FV aave (conservative, monotone, 1st order) algorithm.</p>
+<p>Also need to create the mapping file for the Simple Prescribed Aerosol (SPA) scheme used in EAMxx. This is always from ne30np4 to the new grid pg2.</p>
+<p>We highly suggest that readers refer to this web page for the knowledge of mapping procedures (notation, validation, issues, etc.) especially if readers plan to use bi-grid or tri-grid for RRM: <a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/178848194/Recommended+Mapping+Procedures+for+E3SM+Atmosphere+Grids#RecommendedMappingProceduresforE3SMAtmosphereGrids-E3SMv2withpg2">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/178848194/Recommended+Mapping+Procedures+for+E3SM+Atmosphere+Grids#RecommendedMappingProceduresforE3SMAtmosphereGrids-E3SMv2withpg2</a>).</p>
+<p>Here the domain files are generated for &quot;oRRS18to6v3&quot; data-ocean (streamfile) and &quot;Chilene32x32v1&quot; atm &amp; land.</p>
+<p><code>../scripts/grid_WL.02.gen_domain_map.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+RRMgrid=Chilene32x32v1
+ocn_grid_name=oRRS18to6v3
+atm_grid_name=${RRMgrid}pg2
+date_tag=$(date +&quot;%Y%m%d&quot;)
+lnd_grid_name=${atm_grid_name}
+
+build_method=&quot;manual&quot;
+build_method=&quot;use_unified&quot;
+
+if [ &quot;${build_method}&quot; = &quot;manual&quot; ];then 
+do_step=&quot;build&quot;
+fi 
+do_step=&quot;remap&quot;
+do_step=&quot;gen_domain&quot;
+do_step=&quot;rsync_to_inputdata&quot;
+
+mach=&quot;LC&quot;
+mach=&quot;perlm&quot;
+
+if [ &quot;${mach}&quot; = &quot;LC&quot; ]; then
+  mapping_root=/p/lustre2/zhang73/grids2/${RRMgrid}/
+  source /usr/workspace/e3sm/apps/e3sm-unified/load_latest_e3sm_unified_dane.sh # need e3sm group
+  # source ~/.bashrc_all_stable26
+fi 
+if [ &quot;${mach}&quot; = &quot;perlm&quot; ]; then
+  mapping_root=/global/cfs/cdirs/e3sm/zhang73/grids2/${RRMgrid}/
+  source /global/common/software/e3sm/anaconda_envs/load_e3sm_unified_1.10.0_pm-cpu.sh
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${build_method}&quot; = &quot;manual&quot; ];then 
+e3sm_root=/p/lustre2/zhang73/GitTmp/E3SM_tool_250318_notoprad/
+gen_domain_bin=${e3sm_root}/cime/tools/mapping/gen_domain_files/gen_domain
+
+cd `dirname ${gen_domain}`/src
+eval $(${e3sm_root}/cime/CIME/Tools/get_case_env)
+${e3sm_root}/cime/CIME/scripts/configure --macros-format Makefile --mpilib mpi-serial # =&gt; get .env_mach_specific.sh
+#--- addtional changes needed for dane: 
+#       [Makefile] LDFLAGS += -L$(NETCDF_C_PATH)/lib -lnetcdf -L$(NETCDF_FORTRAN_PATH)/lib -lnetcdff
+# .or.  [Makefile] LDFLAGS += $(shell nc-config --libs) $(shell nf-config --flibs)
+# .and. [Makefile] LDFLAGS += -Wl,-rpath,$(NETCDF_C_PATH)/lib -Wl,-rpath,$(NETCDF_FORTRAN_PATH)/lib
+# .or.  [.env_mach_specific.sh] export LD_LIBRARY_PATH=$HDF5_ROOT/lib:$NETCDF_C_PATH/lib:$NETCDF_FORTRAN_PATH/lib:$LD_LIBRARY_PATH
+source .env_mach_specific.sh
+gmake
+exit 1
+
+else #if [ &quot;${build_method}&quot; = &quot;use_unified&quot; ];then
+gen_domain_bin=gen_domain # use e3sm_unified
+
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; = &quot;remap&quot; ];then 
+# re-org by Chris G:
+echo -e &quot;\n----- Generate mapping file OCN2ATM -----&quot;
+# exit 1
+ncremap -5 -a fv2fv_mono \
+  -s $DIN_LOC_ROOT/ocn/mpas-o/oRRS18to6v3/ocean.oRRS18to6v3.scrip.181106.nc \
+  -g ${mapping_root}/${atm_grid_name}.g \
+  -m ${mapping_root}/map_${ocn_grid_name}_to_${atm_grid_name}.TRaave.${date_tag}.nc
+
+echo -e &quot;\n----- Generate mapping file LND2ROF -----&quot;
+ncremap -5 -a fv2fv_mono \
+  -s ${mapping_root}/${atm_grid_name}.g \
+  -g $DIN_LOC_ROOT/share/meshes/rof/MOSART_global_8th.scrip.20180211c.nc \
+  -m ${mapping_root}/map_${atm_grid_name}_to_r0125.TRaave.${date_tag}.nc
+
+echo -e &quot;\n----- Generate mapping file ROF2LND -----&quot;
+ncremap -5 -a fv2fv_mono \
+  -s $DIN_LOC_ROOT/share/meshes/rof/MOSART_global_8th.scrip.20180211c.nc \
+  -g ${mapping_root}/${atm_grid_name}.g \
+  -m ${mapping_root}/map_r0125_to_${atm_grid_name}.TRaave.${date_tag}.nc
+
+echo -e &quot;\n----- Generate mapping file for SPA (intbilin, SE -&gt; FV) -----&quot;
+GenerateCSMesh --alt --res 30  --file ${mapping_root}/ne30.g
+GenerateVolumetricMesh --in ne30.g --out ne30pg2.g --np 2 --uniform
+ConvertMeshToSCRIP --in ne30pg2.g --out ne30pg2_scrip.nc
+
+ncremap -5 -a intbilin_se2fv \
+  -s ${mapping_root}/ne30.g \
+  -g ${mapping_root}/${atm_grid_name}.g \
+  -m ${mapping_root}/map_ne30np4_to_${atm_grid_name}.intbilin.${date_tag}.nc
+
+ncks -O -5 ${mapping_root}/map_ne30np4_to_${atm_grid_name}.intbilin.${date_tag}.nc ${mapping_root}/map_ne30np4_to_${atm_grid_name}.intbilin.${date_tag}.nc
+fi
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; = &quot;gen_domain&quot; ];then 
+echo -e &quot;\n----- Generate domain files -----&quot;
+cd ${mapping_root}
+
+# if [ &quot;${build_method}&quot; = &quot;manual&quot; ];then 
+#   source `dirname ${gen_domain}`/src/.env_mach_specific.sh
+# fi 
+
+#for target_grid_name in ${lnd_grid_name} ${atm_grid_name}; do #only need one as atm/lnd are the same
+for target_grid_name in ${atm_grid_name}; do
+    map_ocn_to_target=${mapping_root}/map_${ocn_grid_name}_to_${target_grid_name}.TRaave.${date_tag}.nc
+    ${gen_domain_bin} -m ${map_ocn_to_target} -o ${ocn_grid_name} -l ${target_grid_name}
+done
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; = &quot;rsync_to_inputdata&quot; ];then 
+# echo -e &quot;\n----- Copy mapping files to common input location -----&quot;
+# rsync -av ${mapping_root}/map*r0125*.${date_tag}.nc $DIN_LOC_ROOT/cpl/gridmaps/${atm_grid_name}/
+# rsync -av ${mapping_root}/map_ne30np4_to_${atm_grid_name}.intbilin.${date_tag}.nc $DIN_LOC_ROOT/atm/scream/maps/
+
+# echo -e &quot;----- Copy domain files to common input location -----&quot;
+# rsync -av domain.lnd.${atm_grid_name}_${ocn_grid_name}.${date_tag:2}.nc $DIN_LOC_ROOT/share/domains/
+# rsync -av domain.ocn.${atm_grid_name}_${ocn_grid_name}.${date_tag:2}.nc $DIN_LOC_ROOT/share/domains/
+fi </code></pre>
+<h3 id="topography">topography</h3>
+<p>The topography file was generated using the NCAR topography toolchain [Lauritzen2015], with tensor hyperviscosity enabled for the RRM grid. V3 topography tool chain was used (<a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/2712338924/V3+Topography+GLL+PG2+grids">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/2712338924/V3+Topography+GLL+PG2+grids</a>).</p>
+<p><code>../scripts/grid_WL.03.topo_v3.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+RRMgrid=Chilene32x32v1
+mach=&quot;LC&quot;
+# mach=&quot;perlm&quot;
+if [ &quot;${mach}&quot; = &quot;LC&quot; ]; then 
+e3sm_root=/p/lustre2/zhang73/GitTmp/E3SM_tool_250318_notoprad/
+e3sm_root=/p/lustre2/zhang73/GitTmp/E3SM_tool_260410/ #try a new one, ESMF failed for np4 generated by this repo - reason unknow.. also note change tmp -&gt; tmp1 (https://github.com/E3SM-Project/E3SM/commit/577844701399b2eee2d9f6dff3463dc04557a6f3)
+c2b_bin=&quot;cube_to_target&quot;
+e3sm_root_env=/p/lustre2/zhang73/GitTmp/SCREAM_tool/
+grids2=/p/lustre2/zhang73/grids2/
+fi 
+if [ &quot;${mach}&quot; = &quot;perlm&quot; ]; then 
+e3sm_root=/pscratch/sd/z/zhang73/GitTmp/SCREAM_071923/
+c2b_bin=&quot;cube_to_target_noexact&quot;
+e3sm_root=/global/cfs/cdirs/e3sm/zhang73/GitTmp/E3SM_tool_260410/
+c2b_bin=&quot;cube_to_target&quot;
+grids2=/global/cfs/cdirs/e3sm/zhang73/grids2
+fi 
+machine=dane-intel
+homme_tool_root=${e3sm_root}/components/homme/test/tool
+
+do_step=&quot;step1.1_homme_tool_np4_build&quot;
+do_step=&quot;step1.2_homme_tool_np4_run&quot;
+do_step=&quot;step1.3_homme_tool_np4_ncl&quot;
+do_step=&quot;step2.1_cube_to_target_run1_build&quot;
+# do_step=&quot;step2.2_cube_to_target_run1_run&quot;
+# do_step=&quot;step3_homme_tool_smoothing&quot;
+# do_step=&quot;step4_cube_to_target_run2&quot;
+# do_step=&quot;step5_ncks_smoothedtopo&quot;
+do_step=&quot;step6_ncks_topo_np4&quot; # optional, not required 
+
+echo ${do_step} &#x27;...&#x27;
+# -----------------------------------------------------------------------------
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#--- Step 1: Create GLL and pg2 grid template files for !!!
+#       the &quot;USGS-topo-cube3000&quot; high res data and the  !!!
+#       target EAM grid.                                !!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#--- Generate GLL SCRIP file for target grid: for RRM grids, this SCRIP files are good enough
+#--- for topo downsampling, but not conservative enough for use in the coupled model:
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step1.1_homme_tool_np4_build&quot; ];then 
+#--- 1.1 build homme_tool ---
+# eval $(${e3sm_root}/cime/CIME/Tools/get_case_env)
+rm -rf ${e3sm_root}/cmake_homme &amp;&amp; mkdir ${e3sm_root}/cmake_homme &amp;&amp; cd ${e3sm_root}/cmake_homme
+source ${e3sm_root_env}/components/eam/tools/topo_tool/bin_to_cube/.env_mach_specific.sh
+cmake \
+    -C ${e3sm_root}/components/homme/cmake/machineFiles/dane-intel.cmake \
+    -DBUILD_HOMME_WITHOUT_PIOLIBRARY=OFF \
+    -DPREQX_PLEV=26 ${e3sm_root}/components/homme/
+make -j4 homme_tool
+exit 1
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step1.2_homme_tool_np4_run&quot; ];then 
+#--- 1.2 run homme_tool ---
+cd ${grids2}/${RRMgrid}/
+
+rm -f input.nl
+cat &gt; input.nl &lt;&lt;EOF
+&amp;ctl_nl                                                                                                             
+ne = 0                                                                                                       
+mesh_file = &quot;${grids2}/${RRMgrid}/${RRMgrid}.g&quot;                                                   
+/                                                                                                                    
+&amp;vert_nl                                                                                                            
+/                                                                                                                   
+
+&amp;analysis_nl                                                                                                        
+tool = &#x27;grid_template_tool&#x27;                                                                                         
+output_dir = &quot;./&quot;                                                                                                   
+output_timeunits=1                                                                                                  
+output_frequency=1                                                                                                  
+output_varnames1=&#x27;area&#x27;,&#x27;corners&#x27;,&#x27;cv_lat&#x27;,&#x27;cv_lon&#x27;                                                                 
+!output_type=&#x27;netcdf&#x27;                                                                                                
+output_type=&#x27;netcdf4p&#x27;  ! needed for ne1024                                                                        
+io_stride = 16                                                                                                      
+/                                                                                                                   
+EOF
+
+rm -f homme_tool_inputnl.sh
+cat &gt; homme_tool_inputnl.sh &lt;&lt;EOF
+#!/bin/bash
+#
+#SBATCH --account=filexfer
+#SBATCH --job-name=topo_gene
+#SBATCH --nodes=1
+##SBATCH -C cpu
+#SBATCH --time=00:05:00
+#SBATCH -p pbatch
+
+source /p/lustre2/zhang73/GitTmp/SCREAM_tool/components/eam/tools/topo_tool/bin_to_cube/.env_mach_specific.sh
+srun  -K -c 1 -N 1 /p/lustre2/zhang73/GitTmp/E3SM_tool_250318_notoprad/cmake_homme/src/tool/homme_tool &lt; input.nl 
+EOF
+sbatch --exclusive homme_tool_inputnl.sh
+exit 1
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step1.3_homme_tool_np4_ncl&quot; ];then 
+#--- 1.3 NCL ---
+
+cd ${grids2}/${RRMgrid}/
+
+# build NCL: conda install -c conda-forge ncl
+source ~/.bashrc_all_stable26
+# ---make the &#x27;scrip&#x27; file for target GLL grid       
+ncks -O -v lat,lon,area,cv_lat,cv_lon ne0np4_tmp1.nc ${RRMgrid}np4_tmp.nc
+ncl ${e3sm_root}/components/homme/test/tool/ncl/HOMME2SCRIP.ncl  name=\&quot;${RRMgrid}np4\&quot;  ne=0  np=4
+exit 1 
+fi 
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#--- Step 2: cube_to_target, run 1: Compute phi_s on the np4 grid.   !!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step2.1_cube_to_target_run1_build&quot; ];then 
+#--- build cube_to_target ---
+export OS=Linux
+cd ${e3sm_root}/components/eam/tools/topo_tool/cube_to_target
+eval $(${e3sm_root}/cime/CIME/Tools/get_case_env)
+${e3sm_root}/cime/CIME/scripts/configure
+source .env_mach_specific.sh
+echo &quot;MPILIB: $MPILIB&quot;
+which nf-config
+nf-config --flibs
+which mpif90
+exit 1
+#--- changes added to ${e3sm_root}/components/eam/tools/topo_tool/cube_to_target/Makefile: 
+#   LDFLAGS += $(USER_LDFLAGS)
+# .and. LDFLAGS += -Wl,-rpath,$(NETCDF_C_PATH)/lib -Wl,-rpath,$(NETCDF_FORTRAN_PATH)/lib
+
+if [[ &quot;${mach}&quot; = &quot;LC&quot; &amp;&amp; &quot;${e3sm_root}&quot; == *&quot;E3SM_tool_260410&quot;* ]]; then
+    #---try to build it again in a new codebase: E3SM_tool_260410
+    # LIB_NETCDFF := $(shell nf-config --prefix)/lib
+    # LIB_NETCDFC := $(shell nc-config --prefix)/lib
+    # INC_NETCDF  := $(shell nf-config --prefix)/include
+    # FFLAGS  += -I$(INC_NETCDF)
+    # LDFLAGS += -L$(LIB_NETCDFC) -lnetcdf
+    # LDFLAGS += -L$(LIB_NETCDFF) -lnetcdff
+    # LDFLAGS += -Wl,-rpath,$(LIB_NETCDFC)
+    # LDFLAGS += -Wl,-rpath,$(LIB_NETCDFF)
+    # LDFLAGS += $(USER_LDFLAGS)
+    # $(info LIB_NETCDFF=$(LIB_NETCDFF))
+    # $(info LIB_NETCDFC=$(LIB_NETCDFC))
+    # $(info INC_NETCDF=$(INC_NETCDF))
+    # $(info FFLAGS=$(FFLAGS))
+    # $(info LDFLAGS=$(LDFLAGS))
+    INC_NETCDF=&quot;`nf-config --includedir`&quot; \
+        LIB_NETCDF=&quot;`nc-config --libdir`&quot; USER_FC=&quot;`nc-config --fc`&quot; \
+        USER_LDFLAGS=&quot;`nc-config --libs` `nf-config --flibs`&quot; make  
+fi 
+
+if [[ &quot;${mach}&quot; = &quot;perlm&quot; &amp;&amp; &quot;${e3sm_root}&quot; == *&quot;E3SM_tool_260410&quot;* ]]; then
+#---LIB_NETCDF, INC_NETCDF are correct, so dont need env now
+# env LIB_NETCDF=/opt/cray/pe/netcdf-hdf5parallel/4.9.2.1/intel/2023.2/lib INC_NETCDF=/opt/cray/pe/netcdf-hdf5parallel/4.9.2.1/intel/2023.2/include FC=ifort make
+#---Note that on Perlmutter you need to use `ftn` instead of `ifort` (which is not found). `ftn` is a frontend wrapper provided by the Cray Programming Environment. It automatically determines which underlying compiler to invoke, and adds the appropriate `-I` include paths, `-L` library paths, and links against MPI, NetCDF, HDF5, and other Cray system libraries.
+FC=ftn make
+fi 
+
+exit 1 
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step2.2_cube_to_target_run1_run&quot; ];then 
+${e3sm_root}/components/eam/tools/topo_tool/cube_to_target/cube_to_target \
+--target-grid ${grids2}/${RRMgrid}/${RRMgrid}np4_scrip.nc \
+--input-topography ${grids2}/USGS-topo-cube3000.nc \
+--output-topography ${grids2}/${RRMgrid}/${RRMgrid}np4_gtopo30.nc
+exit 1
+fi
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step3_homme_tool_smoothing&quot; ];then 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#--- Step 3: homme_tool:                                           !!!
+#     Starting with the unsmoothed topo data on the GLL grid,     !!!
+#     apply dycore specific smoothing. This uses the standard     !!!
+#     tensor laplace smoothing algorithm with 6 iterations.       !!!
+#     We use the naming convention &quot;xNt&quot;, where N is the value    !!!
+#     used for smooth_phis_numcycle and &quot;t&quot; denotes the use of    !!!
+#     the tensor laplace.                                         !!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+cd ${grids2}/${RRMgrid}/
+
+rm -f input2.nl
+cat &gt; input2.nl &lt;&lt;EOF
+&amp;ctl_nl
+ne = 0
+mesh_file = &#x27;${grids2}/${RRMgrid}/${RRMgrid}.g&#x27;
+smooth_phis_p2filt = 0
+smooth_phis_numcycle = 6       ! increase for more smoothing
+!smooth_phis_numcycle = 12        !for 16xdel2
+!hypervis_order = 2           !for 16xdel2
+smooth_phis_nudt = 4e-16
+hypervis_scaling = 2
+se_ftype = 2 ! actually output NPHYS; overloaded use of ftype
+/
+&amp;vert_nl
+/
+&amp;analysis_nl
+tool = &#x27;topo_pgn_to_smoothed&#x27;
+infilenames = &#x27;./${RRMgrid}np4_gtopo30.nc&#x27;, &#x27;./${RRMgrid}np4_smoothed_phis_x6t&#x27;
+! output_type = &#x27;netcdf&#x27;
+io_stride = 16
+/
+EOF
+
+rm -f homme_tool_inputnl2.sh
+cat &gt; homme_tool_inputnl2.sh &lt;&lt;EOF
+#!/bin/bash
+#
+#SBATCH --account=filexfer
+#SBATCH --job-name=topo_gene
+#SBATCH --nodes=1
+##SBATCH -C cpu
+#SBATCH --time=00:05:00
+#SBATCH -p pbatch
+
+source /p/lustre2/zhang73/GitTmp/SCREAM_tool/components/eam/tools/topo_tool/bin_to_cube/.env_mach_specific.sh
+srun  -K -c 1 -N 1 /p/lustre2/zhang73/GitTmp/E3SM_tool_250318_notoprad/cmake_homme/src/tool/homme_tool &lt; input2.nl 
+EOF
+sbatch --exclusive homme_tool_inputnl2.sh
+exit 1 
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step4_cube_to_target_run2&quot; ];then 
+# #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# #--- Step 4: cube_to_target, run 2: Compute SGH, SGH30, LANDFRAC,       !!!
+# #       and LANDM_COSLAT on the pg2 grid, using the pg2 phi_s data.     !!!
+# #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#---!!! LC run-time err: already fix after 2025/05 broken by Lee, see grid_WL.all.commands.doc.*, but it failed again: NetCDF: Invalid dimension size
+ls -l ${e3sm_root}/components/eam/tools/topo_tool/cube_to_target/${c2b_bin}
+ls -l ${grids2}/${RRMgrid}/${RRMgrid}pg2_scrip.nc
+ls -l ${grids2}/USGS-topo-cube3000.nc
+ls -l ${grids2}/${RRMgrid}/${RRMgrid}np4_smoothed_phis_x6t1.nc
+# exit 1
+${e3sm_root}/components/eam/tools/topo_tool/cube_to_target/${c2b_bin} \
+--target-grid ${grids2}/${RRMgrid}/${RRMgrid}pg2_scrip.nc \
+--input-topography ${grids2}/USGS-topo-cube3000.nc \
+--smoothed-topography ${grids2}/${RRMgrid}/${RRMgrid}np4_smoothed_phis_x6t1.nc \
+--output-topography ${grids2}/${RRMgrid}/GTOPO30_${RRMgrid}np4pg2_x6t.nc
+exit 1
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step5_ncks_smoothedtopo&quot; ];then 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# --- Step 5: ncks: Append the GLL phi_s data to the output of step 4.   !!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+cd ${grids2}/${RRMgrid}/
+if [ &quot;${mach}&quot; = &quot;LC&quot; ]; then 
+source /usr/workspace/e3sm/apps/e3sm-unified/load_latest_e3sm_unified_dane.sh
+fi
+if [ &quot;${mach}&quot; = &quot;perlm&quot; ]; then 
+source /global/common/software/e3sm/anaconda_envs/load_e3sm_unified_1.10.0_pm-cpu.sh
+fi 
+
+ncks -A ${RRMgrid}np4_smoothed_phis_x6t1.nc GTOPO30_${RRMgrid}np4pg2_x6t.nc
+exit 1
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step6_ncks_topo_np4&quot; ];then  
+cd ${grids2}/${RRMgrid}/
+if [ &quot;${mach}&quot; = &quot;LC&quot; ]; then 
+source /usr/workspace/e3sm/apps/e3sm-unified/load_latest_e3sm_unified_dane.sh
+fi
+if [ &quot;${mach}&quot; = &quot;perlm&quot; ]; then 
+source /global/common/software/e3sm/anaconda_envs/load_e3sm_unified_1.10.0_pm-cpu.sh
+fi 
+
+topo_pg2=GTOPO30_${RRMgrid}np4pg2_x6t.nc
+topo_base_name=$(basename &quot;$topo_pg2&quot; .nc)
+ncks -v lat,lon  ${RRMgrid}np4_gtopo30.nc  latlon_np4_ncol.nc
+ncks -v PHIS_d  ${topo_base_name}.nc  ${topo_base_name}.PHIS_d.nc
+ncrename -d ncol_d,ncol -v PHIS_d,PHIS  ${topo_base_name}.PHIS_d.nc  ${topo_base_name}.PHIS_d-rename.nc
+ncks -A latlon_np4_ncol.nc  ${topo_base_name}.PHIS_d-rename.nc
+
+exit 1
+fi </code></pre>
+<h3 id="land-surface-data">land surface data</h3>
+<p>Two steps are needed to generate land surface data (<code>fsurdat</code>):</p>
+<ul>
+<li>preparation for the land surface data (<code>grid_WL.04.fsurdat_0102.mkmapdata_mksurfdata_pl_map.sh</code>)</li>
+<li>generate mapping files for each land surface input data file to input grid files (mkmapdata.sh)</li>
+<li>build <code>mksurfdata_map</code> tool</li>
+<li>generate namelist using <code>mksurfdata.pl</code>, and modify it (if needed)</li>
+</ul>
+<ul>
+<li>create the land surface data by <code>mksurfdata_map</code> (<code>grid_WL.fsurdat_02.mksurfdata_map_namelist.bash</code>)</li>
+</ul>
+<p>Beside the land surface data, the land use file (<code>flanduse_timeseries</code>) is also needed for a grid-specified compset in multi-year simulations. The additional steps are:</p>
+<ul>
+<li>create a LUT (Land Use Translator) file list</li>
+<li>assign the <code>mksrf_fdynuse</code> to the LUT list in surfdata_map&#x27;s namelist</li>
+<li>assign the <code>fdyndat</code> to the name of the land use file you want to create</li>
+</ul>
+<p><code>../scripts/grid_WL.04.fsurdat_0102.mkmapdata_mksurfdata_pl_map.sh</code></p>
+<pre><code class="language-bash">#!/bin/sh
+
+RRMgrid=Chilene32x32v1
+#---use the up-to-date elm tool, and revert the toprad commits to avoid `the map_0.01x0.01 does not found error&#x27;
+mach=&quot;LC&quot;
+# mach=&quot;perlm&quot;
+if [ &quot;${mach}&quot; = &quot;LC&quot; ]; then 
+e3sm_root=/p/lustre2/zhang73/GitTmp/E3SM_tool_250318_notoprad
+e3sm_root_build=/p/lustre2/zhang73/GitTmp/E3SM_tool_260410
+grids2=/p/lustre2/zhang73/grids2/
+fi
+if [ &quot;${mach}&quot; = &quot;perlm&quot; ]; then 
+# e3sm_root=/global/cfs/cdirs/e3sm/zhang73/GitTmp/E3SM_tool_250429_toprad
+e3sm_root=/global/cfs/cdirs/e3sm/zhang73/GitTmp/E3SM_tool_250318_notoprad
+e3sm_root_build=/global/cfs/cdirs/e3sm/zhang73/GitTmp/E3SM_tool_260410
+grids2=/global/cfs/cdirs/e3sm/zhang73/grids2/
+fi
+GRIDFILE=${grids2}/${RRMgrid}/${RRMgrid}pg2_scrip.nc
+INPUTDATA_ROOT=$DIN_LOC_ROOT
+date_tag=$(date +&quot;%Y%m%d&quot;)
+year_fsurdat=2015
+# rcp_tag=&quot;&quot;
+rcp_level=3-7.0
+rcp_tag=&quot;-rcp ${rcp_level}&quot;
+cdate_manualcheck=&quot;260410&quot; #LC
+cdate_manualcheck=&quot;260411&quot; #LC
+
+do_step=&quot;step1_mkmapdata&quot;
+do_step=&quot;step2_gen_mksurfdata_pl&quot;
+# do_step=&quot;step3_build_mksurfdata_map&quot;
+do_step=&quot;step4_run_mksurfdata_map&quot;
+
+use_multiN=true #only needed for map_1km-merge-10min_HYDRO1K-merge-nomask
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step1_mkmapdata&quot; ];then
+cd ${e3sm_root}/components/elm/tools/mkmapdata
+
+echo &#x27;--- ESMFBIN_PATH start mkmapdata_sbatch.sh ---&#x27; 
+#--- use esmf-mpi from unified env ---
+
+if [ &quot;${mach}&quot; = &quot;LC&quot; ]; then 
+export ESMFBIN_PATH=/usr/WS1/e3sm/apps/e3sm-unified/base/envs/e3sm_unified_1.10.0_login/bin
+source ~/.bashrc_all_stable26
+#--- Speed: WP10ne32x32v1 (WP20ne32x32v1) took 7.5min (&lt;29min) for 1km-merge-10min_HYDRO1K-merge-nomask
+export mpiexec=&quot;srun --account=focus --time=00:29:00 -p pbatch -N 20&quot;  # waiting for a bank ... OOM on login node
+fi  #LC
+
+if [ &quot;${mach}&quot; = &quot;perlm&quot; ]; then 
+#--- from grid_WL.fsurdat_0102.mkmapdata_mksurfdata_pl_map_demo_amazonx4v1.perlm.Dalei.sh
+ESMF_version=&quot;e3sm_unified_1_11_1_pm-cpu_gnu_mpich&quot;
+export ESMFBIN_PATH=/global/common/software/e3sm/anaconda_envs/spack/e3sm_unified_1_11_1_pm-cpu_gnu_mpich/var/spack/environments/e3sm_unified_1_11_1_pm-cpu_gnu_mpich/.spack-env/view/bin
+export mpiexec=&quot;srun -N 20 --time=00:29:00 --qos=regular -C cpu -A mp193&quot;  # waiting for a bank ... OOM on login node
+fi #perlm
+
+echo $ESMFBIN_PATH
+#--- env with ncl and nco
+
+#--- dry-run to check the mapping file list
+# ./mkmapdata.sh --gridfile ${GRIDFILE} --inputdata-path ${INPUTDATA_ROOT} --res ${RRMgrid}pg2 --gridtype global --esmf-path ${ESMFBIN_PATH} --output-filetype 64bit_offset --debug -v --list
+# exit 1
+
+#--- regridding 
+if $use_multiN; then
+./mkmapdata.sh --mpiexec &quot;${mpiexec}&quot; --gridfile ${GRIDFILE} --inputdata-path ${INPUTDATA_ROOT} --res ${RRMgrid}pg2 --gridtype global --esmf-path ${ESMFBIN_PATH}  --output-filetype 64bit_offset -v --batch
+else 
+./mkmapdata.sh --gridfile ${GRIDFILE} --inputdata-path ${INPUTDATA_ROOT} --res ${RRMgrid}pg2 --gridtype global --esmf-path ${ESMFBIN_PATH} --output-filetype 64bit_offset -v
+fi 
+echo &quot; ./mkmapdata.sh --gridfile ${GRIDFILE} --inputdata-path ${INPUTDATA_ROOT} --res ${RRMgrid}pg2 --gridtype global --output-filetype 64bit_offset -v&quot;
+exit 1
+
+fi #do_step: step1_mkmapdata
+
+# -----------------------------------------------------------------------------
+if  [ &quot;${do_step}&quot; == &quot;step2_gen_mksurfdata_pl&quot; ];then
+cd ${e3sm_root}/components/elm/tools/mksurfdata_map
+
+./mksurfdata.pl -res usrspec -usr_gname ${RRMgrid}pg2 -usr_gdate ${cdate_manualcheck} -y ${year_fsurdat} ${rcp_tag} -d -dinlc ${INPUTDATA_ROOT} -usr_mapdir ${e3sm_root}/components/elm/tools/mkmapdata
+
+#---modify it manually if needed, e.g., add the landuse.timeseries &lt;mksrf_fdynuse&gt; &lt;fdyndat&gt;
+cp namelist namelist_${RRMgrid}pg2_rcp${rcp_level}-${year_fsurdat}.${mach}
+fi
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step3_build_mksurfdata_map&quot; ];then 
+#---26/04/12: need to rebuild ./mksurfdata_map:
+#       perlm: error while loading shared libraries: libnetcdff.so.6: cannot open shared object file: No such file or directory
+#       LC: HDF5: infinite loop closing library
+cd ${e3sm_root_build}/components/elm/tools/mksurfdata_map/src
+rm -rf Depends* cmake_macros Macros.*
+
+echo &quot;eval $(${e3sm_root_build}/cime/CIME/Tools/get_case_env)&quot;
+echo &quot;${e3sm_root_build}/cime/CIME/scripts/configure&quot;
+eval $(${e3sm_root_build}/cime/CIME/Tools/get_case_env)
+# ${e3sm_root_build}/cime/CIME/scripts/configure --macros-format Makefile --mpilib mpi-serial #dont use seriel?
+${e3sm_root_build}/cime/CIME/scripts/configure
+source ${e3sm_root_build}/components/elm/tools/mksurfdata_map/src/.env_mach_specific.sh
+echo &quot;MPILIB: $MPILIB&quot;
+which nf-config
+nf-config --flibs
+which ftn #no ftn on LC
+which mpif90
+ftn --version
+exit 1
+
+cd ${e3sm_root}/components/elm/tools/mksurfdata_map/src #back to the code for notoprad
+if [ &quot;${mach}&quot; = &quot;LC&quot; ]; then
+    FC=ifx
+    #---note env use new mach config, but code is old (notoprad)
+    source /p/lustre2/zhang73/GitTmp/E3SM_tool_260410/components/elm/tools/mksurfdata_map/src/.env_mach_specific.sh
+    INC_NETCDF=&quot;`nf-config --includedir`&quot; \
+        LIB_NETCDF=&quot;`nc-config --libdir`&quot; USER_FC=ifx \
+        USER_LDFLAGS=&quot;`nc-config --libs` `nf-config --flibs` -Wl,-rpath,${NETCDF_C_PATH}/lib -Wl,-rpath,${NETCDF_FORTRAN_PATH}/lib&quot; make  
+    mv mksurfdata_map  mksurfdata_map.LC_E3SM_tool_260410.ifx_240412
+fi 
+
+if [ &quot;${mach}&quot; = &quot;perlm&quot; ]; then 
+    FC=ftn
+    vi makefile.common -&gt; for ftn: FFLAGS += -O2 -fp-model precise
+    INC_NETCDF=&quot;`nf-config --includedir`&quot; \
+        LIB_NETCDF=&quot;`nc-config --libdir`&quot; USER_FC=ftn \
+        USER_LDFLAGS=&quot;`nc-config --libs` `nf-config --flibs` -Wl,-rpath,${NETCDF_C_PATH}/lib -Wl,-rpath,${NETCDF_FORTRAN_PATH}/lib&quot; make  
+    mv mksurfdata_map  mksurfdata_map.perlm_E3SM_tool_260410.ftn_noKieee
+fi 
+
+# exit 1
+fi
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step4_run_mksurfdata_map&quot; ];then 
+cd ${e3sm_root}/components/elm/tools/mksurfdata_map
+
+#!!! bin is build with the notoprad code &amp;&amp; new build env!!!
+if [ &quot;${mach}&quot; = &quot;LC&quot; ]; then 
+    mksurfdata_map_bin=${e3sm_root}/components/elm/tools/mksurfdata_map/mksurfdata_map.LC_E3SM_tool_260410.ifx_240412
+fi 
+if [ &quot;${mach}&quot; = &quot;perlm&quot; ]; then 
+    mksurfdata_map_bin=${e3sm_root}/components/elm/tools/mksurfdata_map/mksurfdata_map.perlm_E3SM_tool_260410.ftn_noKieee
+fi 
+source ${e3sm_root_build}/components/elm/tools/mksurfdata_map/src/.env_mach_specific.sh
+
+#---cannot use MPI actually due to  mpi-serial build? -&gt; in the configure command, dont specify mpi-serial
+# srun --account=mp193 --time=00:20:00 -q debug -N 1 -C cpu \
+${mksurfdata_map_bin} &lt; namelist_${RRMgrid}pg2_rcp${rcp_level}-${year_fsurdat}.${mach}
+
+# mv surfdata_${RRMgrid}pg2_rcp8.5_simyr2015_${date_tag}.nc  landuse.timeseries_${RRMgrid}pg2_rcp8.5_simyr2015-2100_${date_tag}.nc  ${grids2}/${RRMgrid}/
+# rsync -av ${grids2}/${RRMgrid}/surfdata_${RRMgrid}pg2_rcp8.5_simyr2015_${date_tag}.nc  landuse.timeseries_${RRMgrid}pg2_rcp8.5_simyr2015-2100_${date_tag}.nc  $DIN_LOC_ROOT/lnd/clm2/surfdata_map/
+fi</code></pre>
+<h2 id="initial-conditions">Initial conditions</h2>
+<h3 id="atmosphere-ic">atmosphere IC</h3>
+<p>The atmosphere IC was generated with the HICCUP package (<a href="https://github.com/E3SM-Project/HICCUP">https://github.com/E3SM-Project/HICCUP</a>), which has a built-in download of ERA5 pressure level data, a call to NCO&#x27;s vertical interpolation algorithm (<a href="https://nco.sourceforge.net/nco.html">https://nco.sourceforge.net/nco.html</a>), a call to TempestRemap horizontal interpolation algorithm (<a href="https://github.com/ClimateGlobalChange/tempestremap">https://github.com/ClimateGlobalChange/tempestremap</a>), and a procedure for adjusting surface temperature and pressure with topography following the ECMWF practice [Trenberth1993].</p>
+<p>A good step-by-step tutorial can be found here: <a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/1002373272/Generate+atm+initial+condition+from+analysis+data">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/1002373272/Generate+atm+initial+condition+from+analysis+data</a>. The readers are suggested to learn the HICCUP tool (<a href="https://github.com/E3SM-Project/HICCUP">https://github.com/E3SM-Project/HICCUP</a>) and the relevant references for a better sense.</p>
+<p>Optionally, one can manually generate the mapping files for np4 (IC) and pg2 (nudging) -&gt; ERA5 0.25 deg and pass them to the HICCP run scripts (<code>hiccup_data.map_file</code>):</p>
+<pre><code class="language-bash">ncremap -a fv2se_stt -s /global/cfs/cdirs/e3sm/zhang73/DATA/data_hiccup/ERA5_721x1440_scrip.20220907.nc -g /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/Chilene32x32v1.g -m /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing//map_ERA5_721x1440_to_Chilene32x32v1np4.TRhighorder.20260423.nc </code></pre>
+<p>We did not need to spin up the atmosphere and to adjust the hyperviscosity additionally. The hyperviscosity timestep for dynamics were set to the default value inferred by the scaling factor from the coarse resolution to RRM.</p>
+<p>HICCUP scripts for atm ICs:</p>
+<pre><code class="language-bash">python ../../submodules/HICCUP_fork/get_hindcast_data.ERA5.py --start-date=20250101 --output-root=/global/cfs/cdirs/e3sm/zhang73/DATA/data_hiccup/2025-01
+python ../../submodules/HICCUP_fork/template_hiccup_scripts/create_EAMxx_IC_from_ERA5.2025-01-01_L128_Chilene32x32v1.py</code></pre>
+<h3 id="land-ic">land IC</h3>
+<p>For the hindcast, we first use a land initial condition (IC) (e.g. v1 DECK), which is interpolated from a well-spun-up run, to create the initial conditions for the spinning-up of land-only simulations:</p>
+<ul>
+<li><code>source_inic_file</code> (a land restart file from a balanced run to get the balanced land condition)</li>
+<li><code>target_inic_file</code> (a land restart file from the new grid run to get the grid info)</li>
+</ul>
+<p><code>../scripts/grid_WL.IC.finidat.01.IELM_interpinic.E3SMv1toRRM.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+# need to run a cold-start atm-land test to get the elm.r file
+
+RRMgrid=Chilene32x32v1
+e3sm_root=/p/lustre2/zhang73/GitTmp/E3SM_tool_250318_notoprad #---this netcdf version is not high enough to activate NF_FORMAT_64BIT_OFFSET
+
+interpinic=${e3sm_root}/components/elm/tools/interpinic/
+output_root=/p/lustre2/zhang73/grids2/finidat_interpinic
+lnd_grid_name=${RRMgrid}pg2
+
+do_step=&quot;step1_interpinic_build&quot;
+do_step=&quot;step2_interpinic_run&quot;
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step1_interpinic_build&quot; ];then 
+cd ${interpinic}/src
+#---this netcdf version is not high enough to activate NF_FORMAT_64BIT_OFFSET
+# eval $(${e3sm_root}/cime/CIME/Tools/get_case_env)
+# ${e3sm_root}/cime/CIME/scripts/configure --macros-format Makefile --mpilib mpi-serial
+# source .env_mach_specific.sh
+source /p/lustre2/zhang73/GitTmp/SCREAM_tool/components/eam/tools/topo_tool/bin_to_cube/.env_mach_specific.sh
+
+INC_NETCDF=&quot;`nf-config --includedir`&quot; \
+    LIB_NETCDF=&quot;`nc-config --libdir`&quot; USER_FC=&quot;`nc-config --fc`&quot; \
+    USER_LDFLAGS=&quot;`nc-config --libs` `nf-config --flibs` -Wl,-rpath,${NETCDF_C_PATH}/lib -Wl,-rpath,${NETCDF_FORTRAN_PATH}/lib&quot; make
+exit 1
+fi 
+
+# -----------------------------------------------------------------------------
+if [ &quot;${do_step}&quot; == &quot;step2_interpinic_run&quot; ];then 
+  source_inic_file=/p/lustre2/zhang73/HPSS/20180215.DECKv1b_H1.ne30_oEC.edison/20180215.DECKv1b_H1.ne30_oEC.edison.clm2.r.2015-01-01-00000.nc
+  output_inic_file=${output_root}/${lnd_grid_name}.elm.r.2015-01-01.nc
+  if [ &quot;${RRMgrid}&quot; == &quot;Chilene32x32v1&quot; ];then 
+  target_inic_file=/p/lustre1/zhang73/E3SM_simulations/ChileRRMxx/ChileRRMxx.Chilene32x32v1pg2_Chilene32x32v1pg2.F2010-SCREAMv1.dane/tests/1120x1_nhoursx1_ERA5pres-UVTQ6h-s20250101-O3/run/ChileRRMxx.Chilene32x32v1pg2_Chilene32x32v1pg2.F2010-SCREAMv1.dane.elm.r.2025-01-01-07200.nc
+  fi 
+
+  if ! test -f ${output_inic_file}; then cp ${target_inic_file} ${output_inic_file}; fi
+  cd ${e3sm_root}/components/elm/tools/interpinic
+  source /p/lustre2/zhang73/GitTmp/SCREAM_tool/components/eam/tools/topo_tool/bin_to_cube/.env_mach_specific.sh
+  ./interpinic -i ${source_inic_file} -o ${output_inic_file}
+
+  rsync -av ${output_inic_file} ${output_root}/../${RRMgrid}/gridprocessing/
+fi</code></pre>
+<p>Then, we spinned up the land using 5-yr ERA5 under the <em>IELM-type</em> compset (i.e., <em>DATM</em>). The variables include 6-hourly 2-meter temperature, precipitation, 2-meter specific humidity, longwave radition (up) and shortwave radiation (down) at the surface. For the pseudo-global-warming (PGW) simulations, we used deltas from CESM LENS ensemble.</p>
+<p>The main reference is the betacast package&#x27;s land-spinup part: <a href="https://github.com/zarzycki/betacast/tree/master/land-spinup">https://github.com/zarzycki/betacast/tree/master/land-spinup</a>. Readers are also suggested to follow <a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/872579110/Running+E3SM+on+New+Grids#8.-Generate-a-new-land-initial-condition-(finidat)">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/872579110/Running+E3SM+on+New+Grids#8.-Generate-a-new-land-initial-condition-(finidat)</a> and <a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/3107586055/Generating+land+model+initial+conditions">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/3107586055/Generating+land+model+initial+conditions</a>. A good reference for RRM land IC generation can be found at Weiran&#x27;s documentation: <a href="https://acme-climate.atlassian.net/wiki/spaces/NGDNA/pages/3556147426/CONUS+RRM+New+Grid+Generation+Process">https://acme-climate.atlassian.net/wiki/spaces/NGDNA/pages/3556147426/CONUS+RRM+New+Grid+Generation+Process</a>.</p>
+<p>Specifically:</p>
+<ul>
+<li>use <code>../scripts/grid_WL.IC.finidat.02.gen_datm.01.driver_getera5out.ERA5singlelev_NERSC.sh</code> to directly extract ERA5 near-surface variables (precipitation, downward shortwave radiation at the surface, downward longwave radiation at the surface, 2-m temperature and humidity, 10-m winds, surface pressure, etc.) from the maintained ERA5 path on NERSC, which are used to drive I-compsets. This version is used instead of the default downloading script in betacast because CDS downloads have recently become extremely slow. Note that the mean-flux variables changed from <em>an</em> (CDS) to <em>fc</em> (NERSC) (e.g., <em>ssrd</em> -&gt; <em>msdwswrf</em>, <em>strd</em> -&gt; <em>msdwlwrf</em>).</li>
+</ul>
+<ul>
+<li>use <code>../scripts/grid_WL.IC.finidat.02.gen_datm.02.betacast.gen-forcing.ERA5singlelev_NERSC.py</code> to reformat the ERA5 atmospheric forcing data into <em>DATM</em> format. This script is copied from <code>betacast/land-spinup/gen_datm/gen-forcing.py</code>, except for modifications to the radiative flux conversion because mean-flux variables are used instead.</li>
+</ul>
+<ul>
+<li>prepare <code>user_datm.streams.txt.*</code> (path &amp; filename of stream files of DATM)</li>
+</ul>
+<ul>
+<li>add <code>user_nl_datm</code> in <code>runscript_IELM_core.sh</code></li>
+</ul>
+<ul>
+<li>use <code>finidat_interpinic</code> tool to interpolate a spinned-up restart file from a historcial run to a temporary <code>finidat</code> on the RRM grid (same step as in the climotology simulation)</li>
+</ul>
+<ul>
+<li>add the interpolated <code>finidat</code> in <code>user_nl_elm</code> for the <em>IELM-type</em> run</li>
+</ul>
+<ul>
+<li>The additonal steps for PGW: get deltas from CESM LENS on perlmutter:&lt;/global/cfs/cdirs/m2637/betacast/deltas/CESMLENS_mlev/ens_T/Q/PRECC/PRECL_anom.nc&gt;, and prepare <code>user_datm.streams.txt.Anomaly.*</code></li>
+</ul>
+<p><code>../scripts/grid_WL.IC.finidat.02.gen_datm.01.driver_getera5out.ERA5singlelev_NERSC.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+# Template script for IELM-DATM data generation from ERA5 pressure level data on perlmutter:
+#     source directory: /global/cfs/projectdirs/m3522/cmip6/ERA5/. For the data stored 
+#     there, each file has a main variable and several time steps.
+echo -e &quot; &gt;&gt;&gt;   Template script for IELM-DATM generation (for betacast&#x27;s gen-forcing.py) from ERA5 pressure level data on perlmutter. &quot;
+echo -e &quot; &gt;&gt;&gt;   This script will activate e3sm_unified env \n&quot;
+
+#######################################################
+# USER NEED TO SPECIFY
+timefreq=3 #the time frequency needed for IELM-DATM data
+
+env_unified=&quot;/global/common/software/e3sm/anaconda_envs/load_e3sm_unified_1.10.0_pm-cpu.sh&quot;
+# source $env_unified
+
+drc_out=/global/cfs/cdirs/e3sm/zhang73/datm7src_nersc/ERA5-DATM_3hourly/
+
+# # year=&quot;2020&quot;
+echo &quot;year: $1&quot;
+year=$1
+# for year in `seq 2019 1 2025`;do
+# for year in `seq 2003 1 2010`;do
+# for year in `seq 2011 1 2018`;do
+# for year in `seq 1940 1 2002`;do #1940 - 2018: dtn01, 2019-2025: dtn02
+time_range=&quot;${year}0101-${year}1231&quot;
+
+# END USER DEFINED SETTINGS
+########################################################
+
+if ! test -d ${drc_out}/tmp/${year}/; then mkdir -p ${drc_out}/tmp/${year}/; fi
+if ! test -d ${drc_out}/scripts/; then mkdir -p ${drc_out}/scripts/; fi
+start_year=${time_range:0:4}; start_month=${time_range:4:2}; start_day=${time_range:6:2}
+end_year=${time_range:9:4}; end_month=${time_range:13:2}; end_day=${time_range:15:2}
+echo -e &quot;Start Date: year=$start_year, month=$start_month, day=$start_day&quot;
+echo -e &quot;End Date: year=$end_year, month=$end_month, day=$end_day \n&quot;
+
+# betacast var NERSC var in path  NERSC var in file  NERSC parent path        NERSC var long_name
+# u10          128_165_10u        VAR_10U            e5.oper.an.sfc           &quot;10 metre U wind component&quot;
+# v10          128_166_10v        VAR_10V            e5.oper.an.sfc           &quot;10 metre V wind component&quot;
+# d2m          128_168_2d         VAR_2D             e5.oper.an.sfc           &quot;2 metre dewpoint temperature&quot;
+# t2m          128_167_2t         VAR_2T             e5.oper.an.sfc           &quot;2 metre temperature&quot;
+# sp           128_134_sp         SP                 e5.oper.an.sfc           &quot;Surface pressure&quot;
+# mtpr         235_055_mtpr       MTPR               e5.oper.fc.sfc.meanflux  &quot;Mean total precipitation rate&quot;
+# msdwswrf     235_035_msdwswrf   MSDWSWRF           e5.oper.fc.sfc.meanflux  &quot;Mean surface downward short-wave radiation flux&quot;
+# msdwlwrf     235_036_msdwlwrf   MSDWLWRF           e5.oper.fc.sfc.meanflux  &quot;Mean surface downward long-wave radiation flux&quot;
+var_file=(
+ &quot;128_165_10u&quot;
+ &quot;128_166_10v&quot;
+ &quot;128_168_2d&quot;
+ &quot;128_167_2t&quot;
+ &quot;128_134_sp&quot;
+ &quot;235_055_mtpr&quot;
+ &quot;235_035_msdwswrf&quot;
+ &quot;235_036_msdwlwrf&quot;
+)
+var_in=(
+ &quot;VAR_10U&quot;
+ &quot;VAR_10V&quot;
+ &quot;VAR_2D&quot;
+ &quot;VAR_2T&quot;
+ &quot;SP&quot;
+ &quot;MTPR&quot;
+ &quot;MSDWSWRF&quot;
+ &quot;MSDWLWRF&quot;
+)
+var_out=(
+ &quot;u10&quot;      #0
+ &quot;v10&quot;      #1
+ &quot;d2m&quot;      #2
+ &quot;t2m&quot;      #3
+ &quot;sp&quot;       #4
+ &quot;mtpr&quot;     #5
+ &quot;msdwswrf&quot; #6
+ &quot;msdwlwrf&quot; #7
+)
+stream=(
+ &quot;e5.oper.an.sfc&quot;
+ &quot;e5.oper.an.sfc&quot;
+ &quot;e5.oper.an.sfc&quot;
+ &quot;e5.oper.an.sfc&quot;
+ &quot;e5.oper.an.sfc&quot;
+ &quot;e5.oper.fc.sfc.meanflux&quot;
+ &quot;e5.oper.fc.sfc.meanflux&quot;
+ &quot;e5.oper.fc.sfc.meanflux&quot;
+ )
+
+nvar=${#var_file[@]}
+
+#-------------------------------------------------------------------------------------------------------------
+helper_py=&quot;${drc_out}/scripts/extract_meanflux_3hourly.py&quot;
+
+cat &gt; &quot;$helper_py&quot; &lt;&lt;&#x27;PYEOF&#x27;
+#!/usr/bin/env python
+import argparse
+import xarray as xr
+import pandas as pd
+import numpy as np
+
+p = argparse.ArgumentParser()
+p.add_argument(&quot;--files&quot;, nargs=&quot;+&quot;, required=True)
+p.add_argument(&quot;--var-in&quot;, required=True)
+p.add_argument(&quot;--var-out&quot;, required=True)
+p.add_argument(&quot;--year&quot;, type=int, required=True)
+p.add_argument(&quot;--month&quot;, type=int, required=True)
+p.add_argument(&quot;--out&quot;, required=True)
+p.add_argument(&quot;--timefreq&quot;, type=int, required=True)
+args = p.parse_args()
+
+ds = xr.open_mfdataset(args.files, combine=&quot;by_coords&quot;)
+
+da = ds[args.var_in]
+
+fit_name = &quot;forecast_initial_time&quot;
+fh_name  = &quot;forecast_hour&quot;
+
+fit = pd.to_datetime(ds[fit_name].values).to_numpy()
+fh = np.asarray(ds[fh_name].values)
+print(&quot;forecast_initial_time sample:&quot;, fit[:3])
+print(&quot;forecast_hour sample:&quot;, fh[:])
+print(&quot;forecast_hour dtype:&quot;, fh.dtype)
+
+# broadcast
+fh_td = pd.to_timedelta(fh, unit=&quot;h&quot;).to_numpy()
+valid = fit[:, None] + fh_td[None, :]
+
+da2 = da.stack(time=(fit_name, fh_name))
+# remove MultiIndex-created coordinate variables before overwriting time
+da2 = da2.drop_vars([&quot;time&quot;, fit_name, fh_name], errors=&quot;ignore&quot;)
+da2 = da2.assign_coords(time=(&quot;time&quot;, valid.reshape(-1)))
+da2 = da2.sortby(&quot;time&quot;)
+
+month_start = pd.Timestamp(args.year, args.month, 1)
+next_month = month_start + pd.offsets.MonthBegin(1)
+
+target_hours = list(range(0, 24, args.timefreq))
+
+da2 = da2.where(
+    (da2.time &gt;= month_start)
+    &amp; (da2.time &lt; next_month)
+    &amp; (da2.time.dt.hour.isin(target_hours)),
+    drop=True,
+)
+
+times = pd.to_datetime(da2.time.values)
+print(&quot;Selected valid_time:&quot;)
+for t in times:
+    print(t.strftime(&quot;%Y-%m-%d %H:%M:%S&quot;))
+
+expected = pd.date_range(
+    start=month_start,
+    end=next_month - pd.Timedelta(hours=args.timefreq),
+    freq=f&quot;{args.timefreq}h&quot;,
+)
+missing = expected.difference(times)
+extra = pd.DatetimeIndex(times).difference(expected)
+
+print(f&quot;Selected ntime = {len(times)}&quot;)
+print(f&quot;Expected ntime = {len(expected)}&quot;)
+if len(missing) &gt; 0:
+    print(&quot;Missing times:&quot;)
+    for t in missing:
+        print(t.strftime(&quot;%Y-%m-%d %H:%M:%S&quot;))
+if len(extra) &gt; 0:
+    print(&quot;Extra times:&quot;)
+    for t in extra:
+        print(t.strftime(&quot;%Y-%m-%d %H:%M:%S&quot;))
+if len(missing) &gt; 0 or len(extra) &gt; 0:
+    raise RuntimeError(&quot;Selected valid_time does not match expected 6-hourly target times.&quot;)
+
+out = da2.rename(args.var_out).to_dataset()
+out = out.transpose(&quot;time&quot;, &quot;latitude&quot;, &quot;longitude&quot;)
+# encoding = {
+#     args.var_out: {&quot;dtype&quot;: &quot;float32&quot;},
+#     &quot;latitude&quot;: {&quot;dtype&quot;: &quot;float32&quot;},
+#     &quot;longitude&quot;: {&quot;dtype&quot;: &quot;float32&quot;},
+#     &quot;time&quot;: {
+#         &quot;units&quot;: &quot;hours since 1900-01-01 00:00:00&quot;,
+#         &quot;calendar&quot;: &quot;standard&quot;,
+#     },
+# }
+out.to_netcdf(args.out) #, encoding=encoding
+
+PYEOF
+chmod +x &quot;$helper_py&quot;
+
+#-------------------------------------------------------------------------------------------------------------
+for iy in `seq $start_year 1 $end_year`;do
+iy_fmt=`printf %04d $iy`
+
+if ! test -d ${drc_out}/${iy_fmt}/; then mkdir -p ${drc_out}/${iy_fmt}/; fi
+
+for im in `seq 1 1 12`;do
+im_fmt=`printf %02d $im`
+# for id in `seq 1 1 31`;do
+# id_fmt=`printf %02d $id`
+
+# time_units=&#x27;hours since &#x27;${iy_fmt}-${im_fmt}-01&#x27; 00:00:00&#x27;
+# echo &quot;time_units = $time_units&quot;
+
+#-------------------------------------------------------------------------------------------------------------
+  echo &quot;---- Start generating data on ${iy_fmt}${im_fmt} ----&quot;
+
+  for ((i=0; i&lt;nvar; i++)); do # ori is monthly hourly 744 -&gt; 124 (6-hourly)
+  # for ((i=0; i&lt;5; i++)); do # ori is monthly hourly 744 -&gt; 124 (6-hourly)
+  # for ((i=5; i&lt;nvar; i++)); do #after 5: meanflux
+  # for ((i=0; i&lt;1; i++)); do # ori is monthly hourly 744 -&gt; 124 (6-hourly)
+    echo &quot; &gt;&gt; loop for var: ${drc_out}/tmp/${year}/${var_out[$i]}.${iy_fmt}${im_fmt}.${timefreq}h.nc ... &quot;
+    drc_in=/global/cfs/projectdirs/m3522/cmip6/ERA5/${stream[$i]}/
+
+    if [[ &quot;${stream[$i]}&quot; == *&quot;e5.oper.an.sfc&quot;* ]]; then
+
+      ls -lhr ${drc_in}/${iy_fmt}${im_fmt}/${stream[$i]}.${var_file[$i]}.ll025sc.${iy_fmt}${im_fmt}*.nc
+      ncks -O -d time,0,,${timefreq}  ${drc_in}/${iy_fmt}${im_fmt}/${stream[$i]}.${var_file[$i]}.ll025sc.${iy_fmt}${im_fmt}*.nc  ${drc_out}/tmp/${year}/${var_out[$i]}.${iy_fmt}${im_fmt}.${timefreq}h.nc
+
+      if [[ &quot;${var_in[$i]}&quot; != &quot;${var_out[$i]}&quot; ]]; then
+        ncrename -O -v  ${var_in[$i]},${var_out[$i]}  ${drc_out}/tmp/${year}/${var_out[$i]}.${iy_fmt}${im_fmt}.${timefreq}h.nc  ${drc_out}/tmp/${year}/${var_out[$i]}.${iy_fmt}${im_fmt}.${timefreq}h.nc
+      fi
+      # exit 1
+
+    else #meanflux is complex, need to convert the forecast_initial_time + forecast_hour -&gt; valid_time
+
+      prev_ym=$(date -d &quot;${iy_fmt}-${im_fmt}-01 -1 month&quot; +%Y%m)
+      prev_y=${prev_ym:0:4}
+      prev_m=${prev_ym:4:2}
+
+      files_meanflux=(
+        &quot;${drc_in}/${prev_y}${prev_m}/${stream[$i]}.${var_file[$i]}.ll025sc.${prev_y}${prev_m}16*.nc&quot;
+        &quot;${drc_in}/${iy_fmt}${im_fmt}/${stream[$i]}.${var_file[$i]}.ll025sc.${iy_fmt}${im_fmt}01*.nc&quot;
+        &quot;${drc_in}/${iy_fmt}${im_fmt}/${stream[$i]}.${var_file[$i]}.ll025sc.${iy_fmt}${im_fmt}16*.nc&quot;
+      )
+
+      python &quot;$helper_py&quot; \
+        --files ${files_meanflux[@]} \
+        --var-in &quot;${var_in[$i]}&quot; \
+        --var-out &quot;${var_out[$i]}&quot; \
+        --year &quot;$iy&quot; \
+        --month &quot;$im&quot; \
+        --timefreq &quot;$timefreq&quot; \
+        --out &quot;${drc_out}/tmp/${year}/${var_out[$i]}.${iy_fmt}${im_fmt}.${timefreq}h.nc&quot;
+      # exit 1
+
+    fi 
+
+    echo &quot;done. extract ${var_out[$i]}.&quot;
+  done #var
+
+  echo &quot; &gt;&gt; combine all vars into one file: ${drc_out}/${iy_fmt}/out.${iy_fmt}.${im_fmt}.${timefreq}h.nc ...&quot;
+  # ---combine all vars into one file
+  cp ${drc_out}/tmp/${year}/${var_out[0]}.${iy_fmt}${im_fmt}.${timefreq}h.nc  ${drc_out}/tmp/${year}/out.${iy_fmt}.${im_fmt}.${timefreq}h.nc 
+  for ((i=1; i&lt;nvar; i++)); do
+  ncks -A -v ${var_out[$i]}  ${drc_out}/tmp/${year}/${var_out[$i]}.${iy_fmt}${im_fmt}.${timefreq}h.nc  ${drc_out}/tmp/${year}/out.${iy_fmt}.${im_fmt}.${timefreq}h.nc  
+  # check the coord vars: /time, latitude, longitude/ = /120, 721, 1440/
+  done 
+  mv  ${drc_out}/tmp/${year}/out.${iy_fmt}.${im_fmt}.${timefreq}h.nc  ${drc_out}/${iy_fmt}/out.${iy_fmt}.${im_fmt}.${timefreq}h.nc 
+
+  #---temporary fix
+  # ncks -A -v  ${var_out[0]} ${drc_out}/tmp/${year}/${var_out[0]}.${iy_fmt}${im_fmt}.${timefreq}h.nc  ${drc_out}/${iy_fmt}/out.${iy_fmt}.${im_fmt}.${timefreq}h.nc
+  # exit 1
+  echo &quot;done. combine all vars into one file.&quot;
+
+  echo -e &quot;---- ${drc_out}/tmp/${year}/out.${iy_fmt}.${im_fmt}.${timefreq}h.nc  was generated ----\n&quot;
+# exit 1
+#-------------------------------------------------------------------------------------------------------------
+# done #id
+done #im
+# exit 1
+done #iy
+rm ${drc_out}/tmp/${year}/*
+done #year</code></pre>
+<p><code>../scripts/grid_WL.IC.finidat.02.gen_datm.02.betacast.gen-forcing.ERA5singlelev_NERSC.py</code> Almost identical to <code>betacast/land-spinup/gen_datm/gen-forcing.py</code>, so please refer directly to the betacast implementation, except that the following edits:</p>
+<pre><code class="language-bash">logger.info(&quot;fsds&quot;)
+fsds_era5 = sliced_f.msdwswrf.values.astype(np.float32)
+if do_flds:
+    logger.info(&quot;flds&quot;)
+    flds_era5 = sliced_f.msdwlwrf.values.astype(np.float32)
+
+...
+
+## Convert units 
+#   * (zhang73) dont need this conversion as we&#x27;re using meanflux now...
+#   * to fit grid_WL.gen_datm.driver_getera5out.ERA5singlelev_NERSC.sh
+#logger.info(&quot;Convert units&quot;)
+#fsds_datm = fsds_datm / 3600.  # convert from J/s to W/m2 (over 1 hour)
+#if do_flds:
+#    flds_datm = flds_datm / 3600.</code></pre>
+<p><code>runscript_IELM_core.sh</code></p>
+<pre><code class="language-bash">cat &lt;&lt;EOF &gt;&gt; user_nl_elm
+ check_finidat_year_consistency = .false.
+ check_dynpft_consistency = .false.
+ check_finidat_fsurdat_consistency = .false.
+ check_finidat_pct_consistency = .false.
+ !finidat = &#x27; &#x27;
+ finidat = &#x27;/p/lustre2/zhang73/grids2/finidat_interpinic/${RRMgrid}pg2.elm.r.2015-01-01.nc&#x27;
+ flanduse_timeseries = &#x27;/p/vast1/e3sm/ccsm3data/inputdata/lnd/clm2/surfdata_map/landuse.timeseries_Chilene32x32v1pg2_rcp3.0_simyr2015-2100_c260502.LC.nc&#x27;
+ fsurdat = &#x27;/p/vast1/e3sm/ccsm3data/inputdata/lnd/clm2/surfdata_map/surfdata_Chilene32x32v1pg2_rcp3.0_simyr2015_c260502.nc&#x27;
+
+hist_avgflag_pertape=&#x27;A&#x27;,&#x27;A&#x27;
+hist_nhtfrq = 0,24
+hist_mfilt = 1,30
+hist_fincl1 = &#x27;TSA&#x27;,&#x27;TBOT&#x27;,&#x27;RAIN&#x27;,&#x27;SNOW&#x27;
+EOF
+
+cat &lt;&lt;EOF &gt;&gt; user_nl_datm
+!anomaly_forcing = &#x27;Anomaly.Forcing.Precip&#x27;,&#x27;Anomaly.Forcing.Temperature&#x27;,&#x27;Anomaly.Forcing.Humidity&#x27;,&#x27;Anomaly.Forcing.Longwave&#x27;
+
+tintalgo = &quot;coszen&quot;, &quot;nearest&quot;, &quot;linear&quot;, &quot;linear&quot;, &quot;lower&quot;
+
+streams = &quot;datm.streams.txt.CLMCRUNCEP.Solar 2019 2019 2025&quot;,
+        &quot;datm.streams.txt.CLMCRUNCEP.Precip 2019 2019 2025&quot;,
+        &quot;datm.streams.txt.CLMCRUNCEP.TPQW 2019 2019 2025&quot;,
+        &quot;datm.streams.txt.presaero.clim_2000 1 1 1&quot;, 
+        &quot;datm.streams.txt.topo.observed 1 1 1&quot;, 
+EOF
+
+cp /p/vast1/zhang73/datm7src_nersc/atm_forcing.datm7.${tfreq_datm}.ERA5.c260429/user_datm.streams.txt.LC.elmforc_nersc.Solar ${CASE_SCRIPTS_DIR}/user_datm.streams.txt.CLMCRUNCEP.Solar
+cp /p/vast1/zhang73/datm7src_nersc/atm_forcing.datm7.${tfreq_datm}.ERA5.c260429/user_datm.streams.txt.LC.elmforc_nersc.TPQW ${CASE_SCRIPTS_DIR}/user_datm.streams.txt.CLMCRUNCEP.TPQW
+cp /p/vast1/zhang73/datm7src_nersc/atm_forcing.datm7.${tfreq_datm}.ERA5.c260429/user_datm.streams.txt.LC.elmforc_nersc.Precip ${CASE_SCRIPTS_DIR}/user_datm.streams.txt.CLMCRUNCEP.Precip
+cp /p/vast1/zhang73/datm7src_nersc/atm_forcing.datm7.${tfreq_datm}.ERA5.c260429/datm.streams.txt.LC.topo.observed ${CASE_SCRIPTS_DIR}/user_datm.streams.txt.topo.observed
+#./preview_namelists</code></pre>
+<p>The runscript for a Beijing RRM IELM simulation can be found at:</p>
+<p><code>../scripts/runscripts/IELM.SI-3kmChileRRM-s20251001-interpini.ChileRRMxx.04262026.dane.1120.sh</code></p>
+<h2 id="model-configurations-cime-xml">Model configurations (CIME xml)</h2>
+<p>A series of CIME xml files need to be modified/created to support the new RRM grid and the specific compset required for the simulation. The first part is related to the <em>grid</em>. The second part is mainly related to the <em>compset</em> (partially subject to common requirements of grid and compset). The RRM related XML list can be found here: <a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/872579110/Running+E3SM+on+New+Grids">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/872579110/Running+E3SM+on+New+Grids</a>.</p>
+<p>The CIME xml files related to ChileRRM are listed as follows: { .1 grid. .2 cime_config/config_grids.xml. .2 components/eam/bld/config_files/horiz_grid.xml. .2 driver-mct/cime_config/config_component_e3sm.xml. .2 components/eamxx/cime_config/namelist_defaults_eamxx.xml.</p>
+<p>.2 components/elm/bld/namelist_files/namelist_definition.xml. .1 grid &amp; compset. .2 components/elm/bld/namelist_files/namelist_defaults.xml. }</p>
+<p>Note that for EAMxx: 1) dont need to add <code>ncdata</code> in <code>components/eam/bld/namelist_files/namelist_defaults_eam.xml</code>, 2) dont need to add landuse as the <code>2010_defscream_control</code> compset set the <code>sim_year_range</code> to be constant.</p>
+<p>We directly use the <code>F2010-SCREAMv1</code> compset. So, only the grid-related XML changes are documented here.</p>
+<h3 id="prepare-e3sm-codebase-for-simulations">prepare E3SM codebase for simulations</h3>
+<pre><code class="language-bash">git clone git@github.com:E3SM-Project/E3SM.git ChileRRMxx
+# sync fork of E3SM master on Github website https://github.com/jsbamboo/E3SM/tree/master
+cd ChileRRMxx
+git remote add fork git@github.com:jsbamboo/E3SM.git
+git checkout -b jzhang/ChileRRMxx
+git submodule update --init --recursive; git submodule sync --recursive; git submodule update --recursive
+# ...
+# After modify all xml
+git add .
+git commit -m &quot;set Chilene32x32v1 grids for eamxx&quot;
+git push fork jzhang/ChileRRMxx:jzhang/ChileRRMxx</code></pre>
+<h3 id="add-xml-settings-for-grid">add xml settings for grid</h3>
+<ul>
+<li>Specify the grid-related files in EAMxx&#x27;s namelist:</li>
+<li><code>Filename</code> (full pathname of initial atmospheric state dataset in NetCDF format)</li>
+<li><code>spa_remap_file</code> (mapping file for SPA scheme)</li>
+<li><code>topography_filename</code> (full pathname of time-invariant boundary dataset for topography fields)</li>
+<li><code>mesh_file</code> (exodus format grid file used when <code>se_ne</code>=0, i.e., RRM grids)</li>
+</ul>
+<ul>
+<li>Set the parameters related to the stability of the model in EAMxx&#x27;s namelist:</li>
+<li><code>rad_frequency</code> (rad timestep, specified as number of atm steps)</li>
+<li><code>number_of_subcycles</code> (how many times to subcycle this atm process)</li>
+</ul>
+<ul>
+<li>Set the parameters related to the stability of the model in both EAMxx&#x27;s and eam&#x27;s namelists:</li>
+<li><code>nu_top</code> (second-order viscosity applied only near the model top [m2/s]), set to follow the the finest resolution grid</li>
+<li><code>se_tstep</code> (dynamics timesteps)</li>
+<li><code>dt_tracer_factor</code> (the tracer advection timestep is <code>dt_tracer_factor*se_tstep</code>, where <code>se_tstep</code> is the dynamics timesteps)</li>
+<li><code>se_ne</code> set to zero for RRM</li>
+</ul>
+<p><code>cime_config/config_grids.xml</code></p>
+<pre><code class="language-bash">    &lt;model_grid alias=&quot;Chilene32x32v1pg2_Chilene32x32v1pg2&quot;&gt;
+      &lt;grid name=&quot;atm&quot;&gt;ne0np4_Chilene32x32v1.pg2&lt;/grid&gt;
+      &lt;grid name=&quot;lnd&quot;&gt;ne0np4_Chilene32x32v1.pg2&lt;/grid&gt;
+      &lt;grid name=&quot;ocnice&quot;&gt;ne0np4_Chilene32x32v1.pg2&lt;/grid&gt;
+      &lt;grid name=&quot;rof&quot;&gt;r0125&lt;/grid&gt;
+      &lt;grid name=&quot;glc&quot;&gt;null&lt;/grid&gt;
+      &lt;grid name=&quot;wav&quot;&gt;null&lt;/grid&gt;
+      &lt;mask&gt;oRRS18to6v3&lt;/mask&gt;
+    &lt;/model_grid&gt;
+
+    &lt;domain name=&quot;ne0np4_Chilene32x32v1.pg2&quot;&gt;
+      &lt;nx&gt;134928&lt;/nx&gt;
+      &lt;ny&gt;1&lt;/ny&gt;
+      &lt;file grid=&quot;atm|lnd&quot; mask=&quot;oRRS18to6v3&quot;&gt;$DIN_LOC_ROOT/share/domains/domain.lnd.Chilene32x32v1_oRRS18to6v3.20260413.nc&lt;/file&gt;
+      &lt;file grid=&quot;ice|ocn&quot; mask=&quot;oRRS18to6v3&quot;&gt;$DIN_LOC_ROOT/share/domains/domain.ocn.Chilene32x32v1_oRRS18to6v3.20260413.nc&lt;/file&gt;
+      &lt;desc&gt;1-deg with 10 deg x 10 deg 3 km over Chile version 1 pg2:&lt;/desc&gt;
+    &lt;/domain&gt;
+
+    &lt;gridmap atm_grid=&quot;ne0np4_Chilene32x32v1.pg2&quot; rof_grid=&quot;r0125&quot;&gt;
+     &lt;map name=&quot;ATM2ROF_FMAPNAME&quot;&gt;cpl/gridmaps/Chilene32x32v1pg2/map_Chilene32x32v1pg2_to_r0125_traave.20260413.nc&lt;/map&gt;
+     &lt;map name=&quot;ATM2ROF_SMAPNAME&quot;&gt;cpl/gridmaps/Chilene32x32v1pg2/map_Chilene32x32v1pg2_to_r0125_traave.20260413.nc&lt;/map&gt;
+     &lt;map name=&quot;LND2ROF_FMAPNAME&quot;&gt;cpl/gridmaps/Chilene32x32v1pg2/map_Chilene32x32v1pg2_to_r0125_traave.20260413.nc&lt;/map&gt;
+     &lt;map name=&quot;ROF2LND_FMAPNAME&quot;&gt;cpl/gridmaps/Chilene32x32v1pg2/map_r0125_to_Chilene32x32v1pg2_traave.20260413.nc&lt;/map&gt;
+    &lt;/gridmap&gt;</code></pre>
+<p><code>components/eam/bld/config_files/horiz_grid.xml</code></p>
+<pre><code class="language-bash">&lt;horiz_grid dyn=&quot;se&quot; hgrid=&quot;ne0np4_Chilene32x32v1&quot;            ncol=&quot;303590&quot; csne=&quot;0&quot; csnp=&quot;4&quot; npg=&quot;0&quot; /&gt;
+&lt;horiz_grid dyn=&quot;se&quot; hgrid=&quot;ne0np4_Chilene32x32v1.pg2&quot;        ncol=&quot;134928&quot; csne=&quot;0&quot; csnp=&quot;4&quot; npg=&quot;2&quot; /&gt;</code></pre>
+<p><code>components/eamxx/cime_config/namelist_defaults_eamxx.xml</code></p>
+<pre><code class="language-bash">      &lt;spa_remap_file hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;${DIN_LOC_ROOT}/atm/scream/maps/map_ne30np4_to_Chilene32x32v1pg2.intbilin.20260409.nc&lt;/spa_remap_file&gt;
+      &lt;spc_remap_file hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;${DIN_LOC_ROOT}/atm/scream/maps/map_ne30np4_to_Chilene32x32v1pg2.intbilin.20260409.nc&lt;/spc_remap_file&gt;
+      &lt;rad_frequency hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;3&lt;/rad_frequency&gt;
+      &lt;number_of_subcycles hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;1&lt;/number_of_subcycles&gt;
+    &lt;filename hgrid=&quot;ne0np4_Chilene32x32v1&quot; nlev=&quot;128&quot;&gt;${DIN_LOC_ROOT}/atm/scream/init/HICCUP.atm_era5.2025-01-01.highorder_Chilene32x32v1.L128.dataphis.nc&lt;/filename&gt;
+    &lt;topography_filename hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;${DIN_LOC_ROOT}/atm/cam/topo/USGS-topo_Chilene32x32v1-np4_smoothedx6t_20260413.nopg2phis.nc&lt;/topography_filename&gt;
+    &lt;nc hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;0.0&lt;/nc&gt;
+    &lt;ni hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;0.0&lt;/ni&gt;
+    &lt;nu_top hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;1.0e4&lt;/nu_top&gt;
+    &lt;se_ne hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;0&lt;/se_ne&gt;
+    &lt;se_tstep hgrid=&quot;ne0np4_Chilene32x32v1&quot; constraints=&quot;gt 0&quot;&gt;8.3333333333333&lt;/se_tstep&gt;
+    &lt;mesh_file hgrid=&quot;ne0np4_Chilene32x32v1&quot;&gt;${DIN_LOC_ROOT}/atm/cam/inic/homme/Chilene32x32v1.g&lt;/mesh_file&gt;</code></pre>
+<p><code>components/elm/bld/namelist_files/namelist_definition.xml</code></p>
+<pre><code class="language-bash">&lt;entry id=&quot;res&quot; type=&quot;char*30&quot; category=&quot;default_settings&quot;
+       group=&quot;default_settings&quot;
+       valid_values=
+&quot;...,ne0np4_Chilene32x32v1.pg2,...&quot;&gt;
+Horizontal resolutions</code></pre>
+<p><code>components/elm/bld/namelist_files/namelist_defaults.xml</code></p>
+<pre><code class="language-bash">&lt;!-- Chilene32x32v1.pg2 --&gt;
+&lt;fsurdat hgrid=&quot;ne0np4_Chilene32x32v1.pg2&quot;   sim_year=&quot;2010&quot; use_crop=&quot;.false.&quot; &gt;
+lnd/clm2/surfdata_map/surfdata_Chilene32x32v1pg2_rcp8.5_simyr2015_c260412.LC.nc&lt;/fsurdat&gt;</code></pre>
+<p><code>driver-mct/cime_config/config_component_e3sm.xml</code></p>
+<pre><code class="language-bash">  &lt;entry id=&quot;ATM_NCPL&quot;&gt;
+    &lt;type&gt;integer&lt;/type&gt;
+    &lt;default_value&gt;48&lt;/default_value&gt;
+    &lt;values match=&quot;last&quot;&gt;
+      ...
+      &lt;value compset=&quot;.+&quot; grid=&quot;a%ne0np4_Chilene32x32v1&quot;&gt;864&lt;/value&gt;</code></pre>
+<h3 id="add-xml-setting-for-compset">add xml setting for compset</h3>
+<p>Simply use the default <code>F2010-SCREAMv1</code> compset.</p>
+<h2 id="boundary-conditions">Boundary conditions</h2>
+<h3 id="create-lower-bl-sst-ice-cover">create lower BL (SST, ice cover)</h3>
+<p>Sea surface temperature (SST) and ice cover were obtained from the same coupled simulation as lower boundary conditions to drive Data Ocean (<em>PRES_DOCN</em>) and Prescribed CICE (<em>SPBC_CICE</em>) as a streamfile.</p>
+<p>The steps to download and process the NOAA SSTICE data:</p>
+<ul>
+<li>use HICCUP to download NOAA SST and sea ice</li>
+<li>use <code>poisson_grid_fill</code> function in NCL to fill missing values over land</li>
+<li>replace missing values of ice cover by 0, and add date &amp; datesec variables in streamfile</li>
+</ul>
+<p>Note that the second and third steps are essentially the same as the second step in the climatology simulation workflow. However, I’ve split them into two separate steps, as I generally use 1° SST and ice coverage for the DOCN and CICE simulations. Therefore, an additional regridding step from 0.25° to 1° is included in the third step. This is purely a user preference. The Poisson relaxation method is also widely used by other tools.</p>
+<p>The corresponding scripts can be found at:</p>
+<p><code>../../submodules/HICCUP_fork/get_hindcast_data.NOAA_SSTICE.py</code></p>
+<p><code>../scripts/grid_WL.sst_NOAA.0.fillmsg.ncl</code></p>
+<p><code>../scripts/grid_WL.sst_NOAA.1.fmt-streamfile.ncl</code></p>
+<pre><code class="language-bash">python /global/cfs/cdirs/e3sm/zhang73/GitTmp/SourceCode/HICCUP_fork/get_hindcast_data.NOAA_SSTICE.py --start-year=2025 --output-root=/global/cfs/cdirs/e3sm/zhang73/DATA/data_hiccup/
+ncl &#x27;year=&quot;2025&quot;&#x27; /global/cfs/cdirs/e3sm/zhang73/GitTmp/SourceCode/gridprocessing/Chile/scripts/grid_WL.sst_NOAA.0.fillmsg.ncl
+ncl &#x27;year=&quot;2025&quot;&#x27; &#x27;cdate=&quot;c260422&quot;&#x27; /global/cfs/cdirs/e3sm/zhang73/GitTmp/SourceCode/gridprocessing/Chile/scripts/grid_WL.sst_NOAA.1.fmt-streamfile.ncl</code></pre>
+<h3 id="create-lateral-bl-nudging-files">create lateral BL (nudging files)</h3>
+<p>To constrain the lateral boundary conditions, the nudging capability has been plugged into the E3SM RRM framework. A global wind nudging is used with the nudging coefficient set by 1 over the whole globe and a consistent nudging strength in the vertical direction. A good step-by-step tutorial to use nudging for RRM can be found here: <a href="https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/20153276/How+to+perform+nudging+simulations+with+the+regional+refined+model+RRM">https://acme-climate.atlassian.net/wiki/spaces/DOC/pages/20153276/How+to+perform+nudging+simulations+with+the+regional+refined+model+RRM</a>.</p>
+<p>To enable the window (regional) nudging in EAMxx, we need to generate a nudging weights file offline and prescrib its full path in the runscript:</p>
+<pre><code class="language-bash">git clone git@github.com:E3SM-Project/eamxx-scripts.git
+cd /global/cfs/cdirs/e3sm/zhang73/GitTmp/SourceCode/eamxx-scripts/run_scripts/RRM_example_scripts
+cp SCREAMv1_create_nudging_weights.py SCREAMv1_create_nudging_weights_Chilene32x32v1pg2.py
+vi SCREAMv1_create_nudging_weights_Chilene32x32v1pg2.py # Modify ``USER DEFINED SETTINGS&#x27;&#x27;
+python3  SCREAMv1_create_nudging_weights_Chilene32x32v1pg2.py  -datafile /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/E3SM_grid_support/USGS-topo_Chilene32x32v1-np4_smoothedx6t_20260413.nopg2phis.nc -nlev 128 -lat lat -lon lon -weightsfile /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/Chilene32x32v1pg2_weighting_file.nc</code></pre>
+<p>Either HICCUP or a Bash script can be used to regrid the nudging files. Here, the Bash script version is used to directly access the maintained ERA5 pressure-level and surface datasets on NERSC because CDS downloads have recently become extremely slow.</p>
+<p>The bash version for nudging:</p>
+<ul>
+<li>make horizontal mapping files from ERA5 72x1440 grid to the Chilene32x32v1pg2 grids</li>
+<li>use the bash script <code>../scripts/grid_WL.nudging.eamxx.driver.ERA5pres_NERSC.sh</code> to do the vertical and horizontal remapping using NCO</li>
+</ul>
+<p>To make horizontal mapping files from ERA5 72x1440 grid to the Chilene32x32v1pg2 grids:</p>
+<pre><code class="language-bash">ncremap -a fv2fv_flx -s /global/cfs/cdirs/e3sm/zhang73/DATA/data_hiccup/ERA5_721x1440_scrip.20220907.nc -g /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/Chilene32x32v1pg2.g -m /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/map_ERA5_721x1440_to_Chilene32x32v1pg2.TRaave.20260423.nc</code></pre>
+<p><code>../scripts/grid_WL.nudging.eamxx.driver.ERA5pres_NERSC.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+# Template script for nudging data generation from ERA5 pressure level data on perlmutter:
+#     source directory: /global/cfs/projectdirs/m3522/cmip6/ERA5/. For the data stored 
+#     there, each file has a main variable and several time steps.
+echo -e &quot; &gt;&gt;&gt;   Template script for nudging data generation from ERA5 pressure level data on perlmutter. &quot;
+echo -e &quot; &gt;&gt;&gt;   This script will activate e3sm_unified env \n&quot;
+
+#######################################################
+# USER NEED TO SPECIFY
+timefreq=3 #the time frequency needed for nudging data
+# RRMgrid=&quot;WP10ne32x32v1&quot;
+RRMgrid=&quot;Chilene32x32v1&quot;
+TR_flag=&#x27;TRaave&#x27;
+nlev=128 # SCREAM RRM target number of vertical levels
+drc_out=/global/cfs/cdirs/e3sm/zhang73/nudging.UVTQ/L${nlev}.${TR_flag}_${RRMgrid}pg2.UVTQ.0.25plev.v1/
+if [ ${RRMgrid} == &quot;WP10ne32x32v1&quot; ];then 
+mapfile=/global/cfs/cdirs/e3sm/zhang73/grids2/WP10ne32x32v1/map_ERA5_721x1440_to_WP10ne32x32v1pg2.TRaave.20251111.nc
+fi 
+if [ ${RRMgrid} == &quot;WP20ne32x32v1&quot; ];then 
+mapfile=/global/cfs/cdirs/e3sm/zhang73/grids2/WP20ne32x32v1/map_ERA5_721x1440_to_WP20ne32x32v1pg2.TRaave.20251111.nc
+fi
+if [ ${RRMgrid} == &quot;Chilene32x32v1&quot; ];then 
+mapfile=/global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/map_ERA5_721x1440_to_Chilene32x32v1pg2.TRaave.20260423.nc
+fi
+
+ls ${mapfile}
+
+env_unified=&quot;/global/common/software/e3sm/anaconda_envs/load_e3sm_unified_1.10.0_pm-cpu.sh&quot;
+source $env_unified
+
+time_range=&#x27;20240401-20241231&#x27;
+time_range=&#x27;20250101-20251231&#x27;
+time_range=&#x27;20260101-20260131&#x27; #need to prepare one day more!!!
+
+# do_step=&quot;v1&quot; #by default run both v0 and v1 steps (v0 is the predecessor of v1)
+
+# END USER DEFINED SETTINGS
+########################################################
+
+start_date=${time_range%-*}
+case_t0_start=$(date -d &quot;${start_date}&quot; +&quot;%Y-%m-%d&quot;)&quot;-00000&quot;
+echo ${case_t0_start}
+# exit 1
+
+if ! test -d ${drc_out}/tmp/; then mkdir -p ${drc_out}/tmp/; fi
+if [ $nlev == 72 ];then 
+  vert_coord=/global/cfs/cdirs/e3sm/inputdata/atm/scream/init/vertical_coordinates_L72_20220927.nc
+else 
+  vert_coord=/global/cfs/cdirs/e3sm/inputdata/atm/scream/init/vertical_coordinates_L128_20220927.nc
+fi
+start_year=${time_range:0:4}; start_month=${time_range:4:2}; start_day=${time_range:6:2}
+end_year=${time_range:9:4}; end_month=${time_range:13:2}; end_day=${time_range:15:2}
+echo -e &quot;Start Date: year=$start_year, month=$start_month, day=$start_day&quot;
+echo -e &quot;End Date: year=$end_year, month=$end_month, day=$end_day \n&quot;
+
+var_file=(&quot;128_131_u.ll025uv&quot; &quot;128_132_v.ll025uv&quot; &quot;128_130_t.ll025sc&quot; &quot;128_133_q.ll025sc&quot; &quot;128_134_sp.ll025sc&quot;)
+var_in=(&quot;U&quot; &quot;V&quot; &quot;T&quot; &quot;Q&quot; &quot;SP&quot;)
+var_out_v0=(&quot;U&quot; &quot;V&quot; &quot;T&quot; &quot;Q&quot; &quot;PS&quot;)
+var_out_v1=(&quot;U&quot; &quot;V&quot; &quot;T_mid&quot; &quot;qv&quot; &quot;PS&quot;)
+stream=(
+ &quot;e5.oper.an.pl&quot;
+ &quot;e5.oper.an.pl&quot; 
+ &quot;e5.oper.an.pl&quot; 
+ &quot;e5.oper.an.pl&quot; 
+ &quot;e5.oper.an.sfc&quot; 
+ )
+
+nvar=${#var_file[@]}
+
+#-------------------------------------------------------------------------------------------------------------
+for iy in `seq $start_year 1 $end_year`;do
+iy_fmt=`printf %04d $iy`
+for im in `seq $start_month 1 $end_month`;do
+im_fmt=`printf %02d $im`
+for id in `seq 1 1 31`;do
+id_fmt=`printf %02d $id`
+
+time_tag=${iy_fmt}${im_fmt}${id_fmt}
+case_t0=&quot;${iy_fmt}-${im_fmt}-${id_fmt}-00000&quot;
+time_units=&#x27;hours since &#x27;${iy_fmt}-${im_fmt}-${id_fmt}&#x27; 00:00:00&#x27;
+
+echo &quot;case_t0 = $case_t0&quot;
+echo &quot;time_units = $time_units&quot;
+echo &quot;time_tag = $time_tag&quot;
+
+#-------------------------------------------------------------------------------------------------------------
+# if [[ &quot;${do_step}&quot; = &quot;v0&quot; ]];then 
+  echo &quot;---- Start generating data on ${time_tag} (v0) ----&quot;
+
+  for ((i=0; i&lt;nvar; i++)); do
+    drc_in=/global/cfs/projectdirs/m3522/cmip6/ERA5/${stream[$i]}/
+    if [ &quot;${var_out_v0[$i]}&quot; == &quot;PS&quot; ];then 
+      cdo selday,${id}  ${drc_in}/${iy_fmt}${im_fmt}/${stream[$i]}.${var_file[$i]}.${iy_fmt}${im_fmt}*.nc  ${drc_out}/tmp/${var_out_v0[$i]}.${time_tag}.1h.nc
+      ncks -O -d time,0,,${timefreq}  ${drc_out}/tmp/${var_out_v0[$i]}.${time_tag}.1h.nc  ${drc_out}/tmp/${var_out_v0[$i]}.${time_tag}.${timefreq}h.nc
+      rm ${drc_out}/tmp/${var_out_v0[$i]}.${time_tag}.1h.nc
+    else 
+      ncks -O -d time,0,,${timefreq}  ${drc_in}/${iy_fmt}${im_fmt}/${stream[$i]}.${var_file[$i]}.${time_tag}*.nc  ${drc_out}/tmp/${var_out_v0[$i]}.${time_tag}.${timefreq}h.nc
+    fi 
+    if [[ &quot;${var_in[$i]}&quot; != &quot;${var_out_v0[$i]}&quot; ]]; then
+      ncrename -O -v  ${var_in[$i]},${var_out_v0[$i]}  ${drc_out}/tmp/${var_out_v0[$i]}.${time_tag}.${timefreq}h.nc  ${drc_out}/tmp/${var_out_v0[$i]}.${time_tag}.${timefreq}h.nc
+    fi
+
+    echo &quot;done. extract ${var_out_v0[$i]}.&quot;
+  done #var
+
+  #---combine all vars into one file
+  cp ${drc_out}/tmp/${var_out_v0[0]}.${time_tag}.${timefreq}h.nc  ${drc_out}/tmp/era5p.${time_tag}.${timefreq}h.nc 
+  for ((i=1; i&lt;nvar; i++)); do
+  ncks -A -v ${var_out_v0[$i]}  ${drc_out}/tmp/${var_out_v0[$i]}.${time_tag}.${timefreq}h.nc  ${drc_out}/tmp/era5p.${time_tag}.${timefreq}h.nc 
+  done 
+  echo &quot;done. combine all vars into one file.&quot;
+
+  ncremap -m ${mapfile} -i ${drc_out}/tmp/era5p.${time_tag}.${timefreq}h.nc -o ${drc_out}/tmp/era5p_${TR_flag}.${time_tag}.${timefreq}h.nc
+  echo &quot;done. horizontal interpolation to ${TR_flag}.&quot;
+
+  #---change plev to Pa to let nco work correctly
+  ncrename -O -d level,plev  ${drc_out}/tmp/era5p_${TR_flag}.${time_tag}.${timefreq}h.nc  ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc
+  ncap2 -O -s &#x27;plev[$plev]=level*100&#x27;  ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc  ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc
+  ncatted -O -a units,plev,o,c,&#x27;Pa&#x27; ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc
+  ncatted -a alternate_units,plev,d,,  ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc
+  ncks -O -x -v level ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc  ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc
+
+  ncremap --vrt_fl=${vert_coord} -i  ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc -o ${drc_out}/era5p_${TR_flag}_L${nlev}.${time_tag}.${timefreq}h.nc
+  echo &quot;done. vertical interpolation.&quot;
+
+  echo -e &quot;v0 ---- ${drc_out}/era5p_${TR_flag}_L${nlev}.${time_tag}.${timefreq}h.nc was generated ----\n&quot;
+# fi 
+#-------------------------------------------------------------------------------------------------------------
+
+# if [[ &quot;${do_step}&quot; = &quot;v1&quot; ]];then 
+  echo &quot;---- Continue generating data on ${time_tag} (v1) ----&quot;
+
+  out_fl=&quot;era5p_${TR_flag}_L${nlev}.${time_tag}.${timefreq}h&quot;
+
+  ncpdq -O -a ncol,lev  ${drc_out}/${out_fl}.nc  ${drc_out}/${out_fl}.ncpdq.nc
+
+  for ((i=0; i&lt;nvar; i++)); do
+    if [[ &quot;${var_out_v0[$i]}&quot; != &quot;${var_out_v1[$i]}&quot; ]]; then
+      ncrename -O -v  ${var_out_v0[$i]},${var_out_v1[$i]}  ${drc_out}/${out_fl}.ncpdq.nc  ${drc_out}/${out_fl}.ncpdq.nc
+    fi
+  done
+  
+  ncap2 -O -s &#x27;PS=float(PS);&#x27; ${drc_out}/${out_fl}.ncpdq.nc ${drc_out}/${out_fl}.ncpdq.nc
+  ncap2 -O -s &#x27;p_mid[$time,$ncol,$lev]=0.0f;p_mid[$time,$ncol,$lev]=100000.0*hyam+PS*hybm&#x27; ${drc_out}/${out_fl}.ncpdq.nc  ${drc_out}/${out_fl}.ncpdq.nc
+  ncatted -O -a units,p_mid,o,c,&#x27;Pa&#x27; ${drc_out}/${out_fl}.ncpdq.nc
+  ncatted -O -a long_name,p_mid,o,c,&#x27;p_mid&#x27; ${drc_out}/${out_fl}.ncpdq.nc
+
+  mv ${drc_out}/${out_fl}.ncpdq.nc  ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
+  ncatted -O -t -a _FillValue,,o,f,3.402824e+33  ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
+
+  ncap2 -O -s &#x27;time=time-time(0);&#x27;  ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc  ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
+  ncatted -O -a units,time,o,c,&#x27;hours since &#x27;${iy_fmt}-${im_fmt}-${id_fmt}&#x27; 00:00:00&#x27; ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
+  ncatted -O -a case_t0,global,o,c,${case_t0} ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
+  ncks -O --mk_rec_dmn time ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
+  
+  ncks -O -5 ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc  ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
+
+  echo -e &quot;v1 ---- ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc was generated ----\n&quot;
+# fi 
+# exit 1
+done #id
+done #im
+# exit 1
+done #iy
+rm -rf ${drc_out}/tmp/</code></pre>
+<h3 id="output-yaml">output YAML</h3>
+<p>Commands for generating mapping files to remap output to ne30 resolution:</p>
+<pre><code class="language-bash">ncremap -a fv2fv_flx  -s /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/Chilene32x32v1pg2_scrip.nc  -g /global/cfs/cdirs/e3sm/zhang73/grids/ne30pg2_scrip_20200209.nc  -m  /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/map_Chilene32x32v1pg2_to_ne30pg2_traave.20250426.nc
+ncks -O -5 /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/map_Chilene32x32v1pg2_to_ne30pg2_traave.20250426.nc  /global/cfs/cdirs/e3sm/zhang73/grids2/Chilene32x32v1/gridprocessing/map_Chilene32x32v1pg2_to_ne30pg2_traave.20250426.nc
+rsync -av /p/lustre2/zhang73/grids2/Chilene32x32v1/gridprocessing/map_Chilene32x32v1pg2_to_ne30pg2_traave.20250426.nc  ${DIN_LOC_ROOT}/atm/scream/maps/</code></pre>
+<p>Scripts for generating a Chile with buffer mapping file is conducted by the following steps:</p>
+<ul>
+<li>QGIS: download a Chile national boundary shapefile. In QGIS, apply <em>Dissolve</em> -&gt; <em>Buffer</em> -&gt; <em>Export</em> (EPSG:4326). In the buffer step, select &quot;Dissolve result&quot; with a 1-degree buffer.</li>
+</ul>
+<ul>
+<li>use <code>../scripts/grid_WL.YAML.eamxx.pg2icol_shp.00.gen_shpmask.ncl</code> to generate a mask file for the buffered Chile region.</li>
+</ul>
+<ul>
+<li>use <code>../scripts/grid_WL.YAML.eamxx.pg2icol_shp.01.gen_map.py</code> to generate mapping weights for the buffered Chile shapefile; the weight variable &quot;S&quot; is set to all ones.</li>
+</ul>
+<ul>
+<li>use <code>../scripts/grid_WL.YAML.eamxx.pg2icol_shp.02.check.ncl</code> to verify that the horizontal online remapping stream produces the expected results (i.e., correctly identifying the corresponding columns from the global pg2 output stream during post-processing).</li>
+</ul>
+<p><code>../scripts/grid_WL.YAML.eamxx.pg2icol_shp.00.gen_shpmask.ncl</code></p>
+<pre><code class="language-bash">load &quot;./grid_WL.shp_mask.00.shapefile_utils.ncl&quot;
+
+begin
+mach=&quot;LC&quot;
+mach=&quot;perlm&quot;
+if(mach.eq.&quot;LC&quot;)then 
+host_proc=&quot;/p/lustre2/zhang73&quot;
+end if
+if(mach.eq.&quot;perlm&quot;)then 
+host_proc=&quot;/global/cfs/cdirs/e3sm/zhang73&quot;
+end if
+
+  grid=&quot;Chilene32x32v1&quot;  
+  if(str_get_cols(grid,0,2).eq.&quot;CAx&quot;)then 
+    grid_real = str_get_cols(grid,0,1)+&quot;ne32&quot;+str_get_cols(grid,2,-1)
+  else 
+    grid_real = grid
+  end if 
+  print(grid_real)
+  ; exit
+
+  region=&quot;Chilebuffer&quot;
+  name_shp=&quot;shp_mask_&quot;+grid+&quot;pg2&quot;
+
+  if(grid.eq.&quot;Chilene32x32v1&quot;)then 
+    scrip_name=&quot;&quot;+host_proc+&quot;/grids2/Chilene32x32v1/gridprocessing/Chilene32x32v1pg2_scrip.nc&quot;
+    a = addfile(&quot;/global/cfs/cdirs/e3sm/zhang73/backup/lc/lustre1/E3SM_simulations/ChileRRMxx/ChileRRMxx.Chilene32x32v1pg2_Chilene32x32v1pg2.F2010-SCREAMv1.dane/tests/1120x1_nhoursx1_ERA5pres-UVTQ6h-s20250101-O3/run/1hA.AVERAGE.nhours_x1.2025-01-01-03600.nc&quot;, &quot;r&quot;)
+  end if 
+
+  if(region.eq.&quot;Chile_buffer&quot;)then 
+    shp_filename = &quot;&quot;+host_proc+&quot;/grids2/shapefile/chile_shp/cl_dissolved_buffered-1deg.shp&quot;
+  end if 
+  
+  f = addfile(scrip_name,&quot;r&quot;)  
+  r2d = get_r2d(&quot;float&quot;)
+  x  = f-&gt;grid_center_lon ;* r2d
+  y  = f-&gt;grid_center_lat ;* r2d
+  cx = f-&gt;grid_corner_lon ;* r2d
+  cy = f-&gt;grid_corner_lat ;* r2d
+  print(cx(0:2,:)+&quot;, &quot;+cy(0:2,:))
+; exit
+  dim=dimsizes(cx) ;/grid_size, grid_corners/
+  ncol=dim(0)
+  delete(dim)
+
+diro = &quot;&quot;+host_proc+&quot;/grids2/&quot;+grid_real+&quot;/&quot;
+if(region.eq.&quot;CA&quot;)then 
+filo = region+&quot;_shp_mask_&quot;+grid+&quot;pg2.nc&quot;
+else
+filo = region+&quot;.shp_mask_landfrac.&quot;+grid+&quot;pg2.nc&quot;
+end if
+
+;================================================================================================
+;---generate shp_mask
+opt1             = True
+opt1@return_mask = True
+opt1@debug       = True
+opt1@keep        = True
+
+; make var&#x27;s coordinates to fit shapefile
+x_forshp=where(x.ge.180., x-360., x)
+y_forshp=y
+
+area = a-&gt;area
+lat  = a-&gt;lat
+lon  = a-&gt;lon
+if(grid.eq.&quot;northamericax4v1&quot;)then
+landfrac = a1-&gt;LANDFRAC(0,:)
+else if(grid.eq.&quot;Chilene32x32v1&quot;)then 
+landfrac = a-&gt;landfrac
+else
+landfrac = a-&gt;LANDFRAC(0,:)
+end if
+end if
+if(grid.eq.&quot;Chilene32x32v1&quot;)then 
+var_tmp = a-&gt;ps(0,:)
+else 
+var_tmp = a-&gt;PS(0,:)
+end if 
+var_tmp@lon1d = x_forshp
+var_tmp@lat1d = y_forshp
+shp_mask  = shapefile_mask_data(var_tmp, shp_filename, opt1)
+
+;================================================================================================
+;---save shp_mask to nc file
+; setfileoption(&quot;nc&quot;, &quot;Format&quot;,  &quot;LargeFile&quot;)
+; system(&quot;if ! test -d &quot; + diro +&quot; ; then mkdir -p &quot; + diro + &quot; ; fi&quot;)
+system(&quot;/bin/rm -f &quot; + diro + filo)
+fout = addfile (diro + filo, &quot;c&quot;)  
+
+nl = integertochar(10)
+globalAtt=True
+globalAtt@history = nl+\
+      systemfunc(&quot;date&quot;) + &quot;: ncl &lt; grid_WL.YAML.eamxx.pg2icol_shp.00.shp_mask.ncl &quot;+nl + \
+                            &quot; scrip_name: &quot;+scrip_name+&quot; &quot;+nl +\
+                            &quot; shp_filename: &quot;+shp_filename
+fileattdef(fout, globalAtt)
+
+shp_mask!0=&quot;ncol&quot;
+fout-&gt;$name_shp$ = shp_mask
+fout-&gt;area       = area
+fout-&gt;lat        = lat 
+fout-&gt;lon        = lon 
+fout-&gt;landfrac   = landfrac
+
+system(&quot;rsync -av &quot;+diro + filo+&quot; &quot;+host_proc+&quot;/grids2/shp_mask/&quot;)
+;================================================================================================
+;--use shp_mask to mask var
+; var_mask = mask(var_tmp, shp_mask, 1)
+end</code></pre>
+<p><code>../scripts/grid_WL.YAML.eamxx.pg2icol_shp.01.gen_map.py</code></p>
+<pre><code class="language-bash">import numpy as np
+import os
+import xarray as xr
+import subprocess
+from datetime import datetime
+
+mach = &#x27;LC&#x27;
+mach = &#x27;perlm&#x27;
+if mach == &#x27;LC&#x27;:
+    path_grid = &#x27;/p/lustre2/zhang73/grids2/&#x27;
+if mach == &#x27;perlm&#x27;:
+    path_grid = &#x27;/global/cfs/cdirs/e3sm/zhang73/grids2/&#x27;
+
+#=======================================================================================================
+def main():
+    RRMgrid = &#x27;Chilene32x32v1&#x27;
+    shp_name = &#x27;Chilebuffer&#x27;
+    cdate = datetime.now().strftime(&quot;%Y%m%d&quot;)
+
+    shp_file = f&#x27;{path_grid}shp_mask/{shp_name}.shp_mask_landfrac.{RRMgrid}pg2.nc&#x27;
+    
+    output_dir = f&#x27;{path_grid}/{RRMgrid}/gridprocessing/&#x27;
+    os.makedirs(output_dir, exist_ok=True)
+    mapping_output_file = os.path.join(
+        output_dir,
+        f&#x27;map_{RRMgrid}pg2_to_{shp_name}.pg2icol_shp.{cdate}.nc&#x27;
+    )
+
+    print(f&quot;Find the shpmask pg2 icols with model file {shp_file} ...&quot;)
+    save_shpmask_icol_mappings_to_netcdf(shp_file, mapping_output_file)
+
+#=======================================================================================================
+def save_shpmask_icol_mappings_to_netcdf(shp_file, mapping_output_file):
+    ncol, shp_mask = load_shpmask_data(shp_file)
+
+    # Select source grid columns inside the shapefile mask
+    # Assuming shp_mask == 1 means inside the mask
+    valid = shp_mask == 1
+    icols_0based = np.where(valid)[0]
+
+    if len(icols_0based) == 0:
+        raise ValueError(&quot;No grid cells found with shp_mask == 1.&quot;)
+
+    print(f&quot;Total ncol = {ncol}&quot;)
+    print(f&quot;Selected masked columns = {len(icols_0based)}&quot;)
+
+    save_mapping_netcdf(
+        output_file=mapping_output_file,
+        icols_0based=icols_0based,
+        ncol=ncol
+    )
+
+#=======================================================================================================
+def load_shpmask_data(shp_file):
+    ds = xr.open_dataset(shp_file)
+
+    ncol = ds.sizes[&quot;ncol&quot;]
+
+    # Find the shp_mask variable automatically
+    mask_vars = [v for v in ds.data_vars if v.startswith(&quot;shp_mask&quot;)]
+    if len(mask_vars) != 1:
+        raise ValueError(f&quot;Expected exactly one shp_mask variable, found: {mask_vars}&quot;)
+
+    shp_mask = ds[mask_vars[0]].values
+
+    ds.close()
+
+    return ncol, shp_mask
+
+#=======================================================================================================
+def save_mapping_netcdf(output_file, icols_0based, ncol):
+    &quot;&quot;&quot;
+    Mapping convention:
+      col = source grid column, 1-based
+      row = destination index, 1-based
+      S   = mapping weight, here always 1
+
+    Here each selected PG2 grid cell maps to one destination row.
+    &quot;&quot;&quot;
+
+    n_s = len(icols_0based)
+
+    # col is source global grid index, converted to 1-based
+    col = icols_0based.astype(np.int32) + 1
+
+    # row is destination grid index, also 1-based
+    row = np.arange(1, n_s + 1, dtype=np.int32)
+
+    S = np.ones(n_s, dtype=np.float32)
+
+    ds_map = xr.Dataset(
+        {
+            &quot;col&quot;: (&quot;n_s&quot;, col),
+            &quot;row&quot;: (&quot;n_s&quot;, row),
+            &quot;S&quot;: (&quot;n_s&quot;, S),
+            &quot;icol_0based&quot;: (&quot;n_s&quot;, icols_0based.astype(np.int32)),
+        },
+        coords={
+            &quot;n_s&quot;: np.arange(n_s, dtype=np.int32),
+            &quot;n_a&quot;: np.arange(ncol, dtype=np.int32),
+            &quot;n_b&quot;: np.arange(n_s, dtype=np.int32),
+        },
+        attrs={
+            &quot;description&quot;: &quot;Mapping from global RRM PG2 grid columns to shapefile-mask destination columns&quot;,
+            &quot;convention&quot;: &quot;col and row are 1-based; S is mapping weight&quot;,
+            &quot;source_ncol&quot;: int(ncol),
+            &quot;destination_ncol&quot;: int(n_s),
+        }
+    )
+
+    ds_map[&quot;col&quot;].attrs = {
+        &quot;long_name&quot;: &quot;source grid column index&quot;,
+        &quot;index_base&quot;: &quot;1-based&quot;,
+    }
+    ds_map[&quot;row&quot;].attrs = {
+        &quot;long_name&quot;: &quot;destination grid row index&quot;,
+        &quot;index_base&quot;: &quot;1-based&quot;,
+    }
+    ds_map[&quot;S&quot;].attrs = {
+        &quot;long_name&quot;: &quot;mapping weights&quot;,
+        &quot;description&quot;: &quot;All weights are 1 because this mapping directly extracts selected source columns&quot;,
+    }
+    ds_map[&quot;icol_0based&quot;].attrs = {
+        &quot;long_name&quot;: &quot;source grid column index in Python/xarray convention&quot;,
+        &quot;index_base&quot;: &quot;0-based&quot;,
+    }
+
+    ds_map.to_netcdf(output_file)
+    print(f&quot;Mapping NetCDF saved to: {output_file}&quot;)
+
+    output_file_cdf5 = output_file.replace(&quot;.nc&quot;, &quot;.5.nc&quot;)
+    convert_to_cdf5_ncks(output_file, output_file_cdf5)
+
+#=======================================================================================================
+def convert_to_cdf5_ncks(input_file, output_file):
+    cmd = [&quot;ncks&quot;, &quot;-O&quot;, &quot;-5&quot;, input_file, output_file]
+    try:
+        subprocess.check_call(cmd)
+        print(f&quot;Converted to CDF-5 using NCO: {output_file}&quot;)
+    except subprocess.CalledProcessError as e:
+        print(f&quot;Failed to convert to CDF-5: {e}&quot;)
+
+#=======================================================================================================
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre>
+<p><code>grid_WL.YAML.eamxx.pg2icol_shp.02.check.ncl</code></p>
+<pre><code class="language-bash">begin
+
+dir = &quot;/p/lustre1/zhang73/E3SM_simulations/ChileRRMxx/ChileRRMxx.Chilene32x32v1pg2_Chilene32x32v1pg2.F2010-SCREAMv1.dane/tests/1120x1_nhoursx1_ERA5pres-UVTQ6h-s20250101-O31/run/&quot;
+sim_pg2 = &quot;1hA.AVERAGE.nhours_x1.2025-01-01-03600.nc&quot;
+sim_clbuffer = &quot;1hA_clbuffer_check.AVERAGE.nhours_x1.2025-01-01-03600.nc&quot;
+file_shpmask = &quot;/p/lustre2/zhang73/grids2/shp_mask/Chilebuffer.shp_mask_landfrac.Chilene32x32v1pg2.nc&quot;
+
+b = addfile(file_shpmask, &quot;r&quot;)
+shp_mask = b-&gt;shp_mask_Chilene32x32v1pg2
+
+a = addfiles((/dir+sim_pg2,\
+               dir+sim_clbuffer/), &quot;r&quot;)
+ps_pg2      = a[0]-&gt;ps(0,:) ;/time, ncol=134928/)
+ps_clbuffer = a[1]-&gt;ps(0,:) ;/time, ncol=134928/)
+
+ps_clbuffer_indmask = ps_pg2(ind(shp_mask.eq.1))
+printVarSummary(ps_pg2)
+printVarSummary(ps_clbuffer)
+printVarSummary(ps_clbuffer_indmask)
+
+printMinMax(ps_clbuffer - ps_clbuffer_indmask,0) ;0
+
+end </code></pre>
+<p>The settings of the output YAML files can be found in the <code>runtime_options() {</code> of <code>runscript_core.sh</code> in the next subsection.</p>
+<h3 id="user-namelists-and-runscript">user namelists and runscript</h3>
+<p>The user namelists need to be modified to enable the lower/lateral BLs generated in the previous step. All the modifications are put in the <code>runscript_core.sh</code>.</p>
+<ul>
+<li>add prescribed SST and ice cover settings</li>
+<li>set <code>streams</code> for DOCN in <code>user_nl_docn</code></li>
+<li>set <code>SSTICE_DATA_FILENAME</code>, <code>SSTICE_YEAR_ALIGN</code>, <code>SSTICE_YEAR_START</code>, <code>SSTICE_YEAR_END</code> by xmlchange</li>
+<li>set <code>stream_fldfilename</code> for <code>SPBC_CICE</code> in <code>user_nl_cice</code></li>
+</ul>
+<ul>
+<li>add GHG forcing by atmchange</li>
+<li>add nudging settings by atmchange</li>
+<li>set YAML outputs by atmchange</li>
+<li>set RUN_STARTDATE, STOP_OPTION, RUN_TYPE, RESUBMIT etc. by xmlchange</li>
+</ul>
+<p><code>runscript_core.sh</code></p>
+<pre><code class="language-bash">...
+#-----------------------------------------------------
+runtime_options() {
+
+    echo $&#x27;\n----- Starting runtime_options -----\n&#x27;
+    pushd ${CASE_SCRIPTS_DIR}
+
+    # Set simulation start date
+    if [ ! -z &quot;${START_DATE}&quot; ]; then
+  ./xmlchange RUN_STARTDATE=${START_DATE}
+    fi
+    # Set temperature cut off in dycore threshold to 180K
+    ./atmchange vtheta_thresh=180
+    
+    # Set nudging
+    ./case.setup
+    ./atmchange mac_aero_mic::atm_procs_list=tms,shoc,cld_fraction,spa,p3,nudging
+    #./atmchange mac_aero_mic::atm_procs_list=tms,shoc,cld_fraction,spa,p3
+    ./atmchange physics::atm_procs_list=&quot;mac_aero_mic,rrtmgp&quot; #remove cosp
+    #./atmchange physics::cosp::cosp_frequency_units=&quot;steps&quot;
+    #./atmchange physics::cosp::cosp_frequency=3 #3
+    #./atmchange physics::cosp::cosp_subcolumns=1
+    ./atmchange physics::rrtmgp::rad_frequency=3 #3 300s -&gt; 5 min
+    ./atmchange set_cld_frac_r_to_one=true
+
+    ./case.setup 
+    # make sure that ``time&#x27;&#x27; is set to unlimited o/w we&#x27;ll receive SIGSEGV: &quot;invalid memory reference without other clues&quot;
+    ./atmchange physics::mac_aero_mic::nudging::nudging_filenames_patterns=${NUDGING_ROOT}/era5p_TRaave_L128.2025????.3h.ncpdq_FillValue.v1.nc
+    ./atmchange physics::mac_aero_mic::nudging::nudging_fields=U,V,T_mid,qv
+    ./atmchange mac_aero_mic::nudging::source_pressure_type=&quot;TIME_DEPENDENT_3D_PROFILE&quot;
+    # we do can activate online horiz_remap + weighted nudging at the same time
+    #   &lt;&lt; if you want that, comment the EKAT MSG with ``coarse&#x27;&#x27; and ``weighted&#x27;&#x27; in eamxx_nudging_process_interface.cpp in the source code
+    ./atmchange mac_aero_mic::nudging::nudging_refine_remap_mapfile=&quot;no-file-given&quot;
+    ./atmchange physics::mac_aero_mic::nudging::skip_vert_interpolation=true
+    ./atmchange physics::mac_aero_mic::nudging::nudging_timescale=21600 #6h
+    # need to generate a netcdf file of nudging_weights.  Please see the script
+    #  SCREAMv1_create_nudging_weights.py to do this.
+    ./atmchange physics::mac_aero_mic::nudging::use_nudging_weights=true
+    ./atmchange physics::mac_aero_mic::nudging::nudging_weights_file=/p/lustre2/zhang73/grids2/${RRMgrid}/gridprocessing/${RRMgrid}pg2_weighting_file.nc
+    # dont know why now we cannot ask for compute_tendencies for nudging. error: &quot;The key &#x27;nudging_T_mid_tend&#x27; is not associated to any registered product&quot;
+    #./atmchange physics::mac_aero_mic::nudging::compute_tendencies=T_mid,qv
+
+    # Set atmos IC file
+    # Allow for tendency outputs
+    #./atmchange physics::mac_aero_mic::shoc::compute_tendencies=T_mid,qv
+    #./atmchange physics::mac_aero_mic::p3::compute_tendencies=T_mid,qv
+    #./atmchange physics::rrtmgp::compute_tendencies=T_mid
+    #./atmchange homme::compute_tendencies=T_mid,qv
+
+    #./atmchange physics::mac_aero_mic::p3::extra_p3_diags=true
+    #./atmchange physics::mac_aero_mic::shoc::extra_shoc_diags=true
+
+    ## use GHG levels more appropriate for 2019
+    #./atmchange co2vmr=410.5e-6
+    #./atmchange ch4vmr=1877.0e-9
+    #./atmchange n2ovmr=332.0e-9
+    #./atmchange orbital_year=2019
+    ## use CO2 the same in land model
+    #./xmlchange CCSM_CO2_PPMV=410.5
+
+    # use GHG levels more appropriate for 2024 from NOAA GML websites
+    ./atmchange co2vmr=424.6e-6
+    ./atmchange ch4vmr=1929.5e-9
+    ./atmchange n2ovmr=337.7e-9
+    ./atmchange orbital_year=2024
+    # use CO2 the same in land model
+    ./xmlchange CCSM_CO2_PPMV=424.6
+
+    #user_nl #if you set user_docn.streams instead, must activate it here
+    ./xmlchange SSTICE_DATA_FILENAME=&quot;/p/lustre2/zhang73/DATA/data_hiccup/sst_ice.daymean.2020_2025_noleap.fillmsg.aave_1x1.fmt-c260502.nc&quot;
+    ./xmlchange SSTICE_YEAR_ALIGN=&quot;2020&quot;
+    ./xmlchange SSTICE_YEAR_START=&quot;2020&quot;
+    ./xmlchange SSTICE_YEAR_END=&quot;2025&quot;
+    
+    # Segment length
+    ./xmlchange STOP_OPTION=${STOP_OPTION,,},STOP_N=${STOP_N}
+
+    # Restart frequency
+    ./xmlchange REST_OPTION=${REST_OPTION,,},REST_N=${REST_N}
+
+    # Coupler history
+    ./xmlchange HIST_OPTION=${HIST_OPTION,,},HIST_N=${HIST_N}
+
+    # Coupler budgets (always on)
+    ./xmlchange BUDGETS=TRUE
+
+    # Set resubmissions
+    if (( RESUBMIT &gt; 0 )); then
+  ./xmlchange RESUBMIT=${RESUBMIT}
+    fi
+
+    # Run type
+    # Start from default of user-specified initial conditions
+    if [ &quot;${MODEL_START_TYPE,,}&quot; == &quot;initial&quot; ]; then
+  ./xmlchange RUN_TYPE=&quot;startup&quot;
+  ./xmlchange CONTINUE_RUN=&quot;FALSE&quot;
+
+    # Continue existing run
+    elif [ &quot;${MODEL_START_TYPE,,}&quot; == &quot;continue&quot; ]; then
+  ./xmlchange CONTINUE_RUN=&quot;TRUE&quot;
+
+    elif [ &quot;${MODEL_START_TYPE,,}&quot; == &quot;branch&quot; ] || [ &quot;${MODEL_START_TYPE,,}&quot; == &quot;hybrid&quot; ]; then
+  ./xmlchange RUN_TYPE=${MODEL_START_TYPE,,}
+  ./xmlchange GET_REFCASE=${GET_REFCASE}
+  ./xmlchange RUN_REFDIR=${RUN_REFDIR}
+  ./xmlchange RUN_REFCASE=${RUN_REFCASE}
+  ./xmlchange RUN_REFDATE=${RUN_REFDATE}
+  echo &#x27;Warning: $MODEL_START_TYPE = &#x27;${MODEL_START_TYPE}
+  echo &#x27;$RUN_REFDIR = &#x27;${RUN_REFDIR}
+  echo &#x27;$RUN_REFCASE = &#x27;${RUN_REFCASE}
+  echo &#x27;$RUN_REFDATE = &#x27;${START_DATE}
+
+    else
+  echo &#x27;ERROR: $MODEL_START_TYPE = &#x27;${MODEL_START_TYPE}&#x27; is unrecognized. Exiting.&#x27;
+  exit 380
+    fi
+
+cat &lt;&lt;EOF &gt;&gt; 1mA.yaml
+%YAML 1.1
+---
+averaging_type: average
+max_snapshots_per_file: 12
+filename_prefix: 1mA
+fields:
+  physics_pg2:
+    field_names:
+    - landfrac
+    - ocnfrac
+iotype: pnetcdf
+output_control:
+  frequency: 1
+  frequency_units: nmonths
+restart:
+  force_new_file: true
+EOF
+
+cat &lt;&lt;EOF &gt;&gt; 6hI_ne30pg2.yaml
+%YAML 1.1
+---
+averaging_type: instant
+max_snapshots_per_file: 1460
+filename_prefix: 6hI_ne30pg2
+horiz_remap_file: \${DIN_LOC_ROOT}/atm/scream/maps/map_Chilene32x32v1pg2_to_ne30pg2_traave.20250426.nc
+fields:
+  physics_pg2:
+    field_names:
+    - ps
+    - SeaLevelPressure
+    - T_2m
+    - RelativeHumidity_at_2m_above_surface
+    - qv_2m
+    - VapWaterPath
+    - ZonalVapFlux
+    - MeridionalVapFlux
+    - z_mid_at_500hPa
+    - T_mid_at_200hPa
+    - T_mid_at_500hPa
+    - U_at_850hPa
+    - V_at_850hPa
+iotype: pnetcdf
+output_control:
+  frequency: 6
+  frequency_units: nhours
+restart:
+  force_new_file: true
+EOF
+
+cat &lt;&lt;EOF &gt;&gt; 1hA.yaml
+%YAML 1.1
+---
+averaging_type: average
+max_snapshots_per_file: 8760
+filename_prefix: 1hA
+fields:
+  physics_pg2:
+    field_names:
+    - RelativeHumidity_at_2m_above_surface
+    - qv_at_model_bot
+    - qv_2m
+    - T_2m
+    - T_mid_at_model_bot
+    - surf_radiative_T
+    - ps
+    - U_at_10m_above_surface
+    - V_at_10m_above_surface
+    - wind_speed_10m
+    - U_at_90m_above_surface
+    - V_at_90m_above_surface
+    - SW_flux_dn_at_model_bot
+    - sfc_flux_dir_nir
+    - sfc_flux_dir_vis
+    - sfc_flux_dif_nir
+    - sfc_flux_dif_vis
+    - LW_flux_up_at_model_top
+    - precip_total_surf_mass_flux
+    - snow_depth_land
+iotype: pnetcdf
+output_control:
+  frequency: 1
+  frequency_units: nhours
+restart:
+  force_new_file: true
+EOF
+
+cat &lt;&lt;EOF &gt;&gt; 15minA_clbuffer.yaml
+%YAML 1.1
+---
+averaging_type: average
+max_snapshots_per_file: 35040 # 1 yr x 24 h x 4 
+filename_prefix: 15minA_clbuffer
+horiz_remap_file: \${DIN_LOC_ROOT}/atm/scream/maps/map_Chilene32x32v1pg2_to_Chilebuffer.pg2icol_shp.20260501.5.nc
+fields:
+  physics_pg2:
+    field_names:
+    - RelativeHumidity_at_2m_above_surface
+    - qv_at_model_bot
+    - qv_2m
+    - T_2m
+    - T_mid_at_model_bot
+    - surf_radiative_T
+    - ps
+    - U_at_10m_above_surface
+    - V_at_10m_above_surface
+    - wind_speed_10m
+    - U_at_90m_above_surface
+    - V_at_90m_above_surface
+    - SW_flux_dn_at_model_bot
+    - sfc_flux_dir_nir
+    - sfc_flux_dir_vis
+    - sfc_flux_dif_nir
+    - sfc_flux_dif_vis
+    - LW_flux_up_at_model_top
+    - precip_total_surf_mass_flux
+    - snow_depth_land
+iotype: pnetcdf
+output_control:
+  frequency: 15
+  frequency_units: nmins
+restart:
+  force_new_file: true
+EOF
+
+#---only for checking in test runs---
+cat &lt;&lt;EOF &gt;&gt; 1hA_clbuffer_check.yaml
+%YAML 1.1
+---
+averaging_type: average
+max_snapshots_per_file: 8760
+filename_prefix: 1hA_clbuffer_check
+horiz_remap_file: \${DIN_LOC_ROOT}/atm/scream/maps/map_Chilene32x32v1pg2_to_Chilebuffer.pg2icol_shp.20260501.5.nc
+fields:
+  physics_pg2:
+    field_names:
+    - RelativeHumidity_at_2m_above_surface
+    - qv_at_model_bot
+    - qv_2m
+    - T_2m
+    - T_mid_at_model_bot
+    - surf_radiative_T
+    - ps
+    - U_at_10m_above_surface
+    - V_at_10m_above_surface
+    - wind_speed_10m
+    - U_at_90m_above_surface
+    - V_at_90m_above_surface
+    - SW_flux_dn_at_model_bot
+    - sfc_flux_dir_nir
+    - sfc_flux_dir_vis
+    - sfc_flux_dif_nir
+    - sfc_flux_dif_vis
+    - LW_flux_up_at_model_top
+    - precip_total_surf_mass_flux
+    - snow_depth_land
+iotype: pnetcdf
+output_control:
+  frequency: 1
+  frequency_units: nhours
+restart:
+  force_new_file: true
+EOF
+
+cat &lt;&lt;EOF &gt;&gt; 1mA_nudging_check.yaml
+%YAML 1.1
+---
+averaging_type: average
+max_snapshots_per_file: 12
+filename_prefix: 1mA_nudging_check
+fields:
+  physics_pg2:
+    field_names:
+    - U
+    - V
+    - T_mid
+    - qv
+    - ps
+iotype: pnetcdf
+output_control:
+  frequency: 1
+  frequency_units: nmonths
+restart:
+  force_new_file: true
+EOF
+
+cat &lt;&lt;EOF &gt;&gt; 3hA_nudging_check.yaml
+%YAML 1.1
+---
+averaging_type: average
+max_snapshots_per_file: 2920
+filename_prefix: 3hA_nudging_check
+fields:
+  physics_pg2:
+    field_names:
+    - U_at_850hPa
+    - V_at_850hPa
+    - T_mid_at_850hPa
+    - qv_at_850hPa
+    - ps
+iotype: pnetcdf
+output_control:
+  frequency: 3
+  frequency_units: nhours
+restart:
+  force_new_file: true
+EOF
+#---only for checking in test runs---
+
+    ./atmchange output_yaml_files=&quot;./1mA.yaml&quot;
+    ./atmchange output_yaml_files+=&quot;./6hI_ne30pg2.yaml&quot;
+    ./atmchange output_yaml_files+=&quot;./1hA.yaml&quot;
+    ./atmchange output_yaml_files+=&quot;./15minA_clbuffer.yaml&quot;
+    #---below: only for checking in test runs
+    #./atmchange output_yaml_files+=&quot;./1hA_clbuffer_check.yaml&quot;
+    ./atmchange output_yaml_files+=&quot;./1mA_nudging_check.yaml&quot;
+    ./atmchange output_yaml_files+=&quot;./3hA_nudging_check.yaml&quot;
+
+    popd
+}
+...</code></pre>
+<p>The runscript for a hindcast can be found at:</p>
+<p><code>../scripts/runscripts/test-O32-1mon.SI-3kmChileRRM-s20251001-UVTQ6h-elmr.ChileRRMxx.04262026.dane.1120.sh</code></p>
+<p>This documentation is supported by LLNL LDRD project [25-SI-007] &quot;Framework for Optimal Critical-Infrastructure Solutions and Decision Support&quot;. Work at LLNL was performed under the auspices of the U.S. DOE by the Lawrence Livermore National Laboratory under contract (grant no. DE-AC52-07NA27344; IM release: ).</p>
+<h2 id="references">References</h2>
+<ul>
+<li><strong>[Bogenschutz2024]</strong> Bogenschutz, P., Zhang, J., Tang, Q., and Cameron-Smith, P.: Atmospheric River Induced Precipitation in California as Simulated by the Regionally Refined Simplified Convective Resolving E3SM Atmosphere Model, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2024-839, 2024.</li>
+<li><strong>[Caldwell2021]</strong> Caldwell, P. M., Terai, C. R., Hillman, B., Keen, N. D., Bogenschutz, P., Lin, W., Beydoun, H., Taylor, M., Bertagna, L., Bradley, A. M., Clevenger, T. C., Donahue, A. S., Eldred, C., Foucar, J., Golaz, J. C., Guba, O., Jacob, R., Johnson, J., Krishna, J., Liu, W., Pressel, K., Salinger, A. G., Singh, B., Steyer, A., Ullrich, P., Wu, D., Yuan, X., Shpund, J., Ma, H. Y., and Zender, C. S.: Convection-Permitting Simulations With the E3SM Global Atmosphere Model, Journal of Advances in Modeling Earth Systems, 13, https://doi.org/10.1029/2021ms002544, 2021.</li>
+<li><strong>[Lauritzen2015]</strong> Lauritzen, P. H., Bacmeister, J. T., Callaghan, P. F., and Taylor, M. A.: NCAR_Topo (v1.0): NCAR global model topography generation software for unstructured grids, Geoscientific Model Development, 8, 3975--3986, https://doi.org/10.5194/gmd-8-3975-2015, cz6xg Times Cited:22 Cited References Count:49, 2015.</li>
+<li><strong>[Tang2019]</strong> Tang, Q., Klein, S. A., Xie, S. C., Lin, W. Y., Golaz, J. C., Roesler, E. L., Taylor, M. A., Rasch, P. J., Bader, D. C., Berg, L. K., Caldwell, P., Giangrande, S. E., Neale, R. B., Qian, Y., Riihimaki, L. D., Zender, C. S., Zhang, Y. Y., and Zheng, X.: Regionally refined test bed in E3SM atmosphere model version 1 (EAMv1) and applications for high-resolution modeling, Geoscientific Model Development, 12, 2679--2706, https://doi.org/10.5194/gmd-12-2679-2019, ih4ju Times Cited:31 Cited References Count:92, 2019.</li>
+<li><strong>[Tang2023]</strong> Tang, Q., Golaz, J.-C., Van Roekel, L. P., Taylor, M. A., Lin, W., Hillman, B. R., Ullrich, P. A., Bradley, A. M., Guba, O., Wolfe, J. D., Zhou, T., Zhang, K., Zheng, X., Zhang, Y., Zhang, M., Wu, M., Wang, H., Tao, C., Singh, B., Rhoades, A. M., Qin, Y., Li, H.-Y., Feng, Y., Zhang, Y., Zhang, C., Zender, C. S., Xie, S., Roesler, E. L., Roberts, A. F., Mametjanov, A., Maltrud, M. E., Keen, N. D., Jacob, R. L., Jablonowski, C., Hughes, O. K., Forsyth, R. M., Di Vittorio, A. V., Caldwell, P. M., Bisht, G., McCoy, R. B., Leung, L. R., and Bader, D. C.: The fully coupled regionally refined model of E3SM version 2: overview of the atmosphere, land, and river results, Geoscientific Model Development, 16, 3953--3995, https://doi.org/10.5194/gmd-16-3953-2023, 2023.</li>
+<li><strong>[Trenberth1993]</strong> Trenberth, K. E., Berry, J. C., and Buja, L. E.: Vertical interpolation and truncation of model-coordinate data, National Center for Atmospheric Research, Climate and Global Dynamics Division, 1993.</li>
+<li><strong>[Zhang2024]</strong> Zhang, J., Bogenschutz, P., Tang, Q., Cameron-smith, P., and Zhang, C.: Leveraging regional mesh refinement to simulate future climate projections for California using the Simplified Convection-Permitting E3SM Atmosphere Model Version 0, Geoscientific Model Development, 17, 3687-3731, https://doi.org/10.5194/gmd-17-3687-2024, 2024.</li>
+</ul>
+  </main>
+</body>
+</html>
