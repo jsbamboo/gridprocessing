@@ -1,8 +1,8 @@
-[submodule "WPRRMxx/WPRRM_Doc_scripts/HICCUP_fork"]
-	path = WPRRMxx/WPRRM_Doc_scripts/HICCUP_fork
+[submodule "submodules/HICCUP_fork"]
+	path = submodules/HICCUP_fork
 	url = git@github.com:jsbamboo/HICCUP.git
 	branch = jzhang/maint-perlm
-[submodule "WPRRMxx/WPRRM_Doc_scripts/betacast_fork"]
-	path = WPRRMxx/WPRRM_Doc_scripts/betacast_fork
+[submodule "submodules/betacast_fork"]
+	path = submodules/betacast_fork
 	url = git@github.com:jsbamboo/betacast.git
 	branch = jzhang/maint-perlm
