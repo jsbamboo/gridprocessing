@@ -2384,8 +2384,6 @@ The runscript for a hindcast can be found at:
 
 `../scripts/runscripts/test-O32-1mon.SI-3kmChileRRM-s20251001-UVTQ6h-elmr.ChileRRMxx.04262026.dane.1120.sh`
 
-This documentation is supported by LLNL LDRD project [25-SI-007] "Framework for Optimal Critical-Infrastructure Solutions and Decision Support". Work at LLNL was performed under the auspices of the U.S. DOE by the Lawrence Livermore National Laboratory under contract (grant no. DE-AC52-07NA27344; IM release: ).
-
 ## References
 
 - **[Bogenschutz2024]** Bogenschutz, P., Zhang, J., Tang, Q., and Cameron-Smith, P.: Atmospheric River Induced Precipitation in California as Simulated by the Regionally Refined Simplified Convective Resolving E3SM Atmosphere Model, EGUsphere [preprint], https://doi.org/10.5194/egusphere-2024-839, 2024.

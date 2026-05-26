@@ -1,11 +1,24 @@
 #!/bin/bash
 
+mach="LC"
+# mach="perlm"
+if [ "${mach}" == "LC" ]; then
+    host_proc="/p/lustre2/zhang73"
+else
+    host_proc="/global/cfs/cdirs/e3sm/zhang73"
+fi
+
 RRMgrid=Chilene32x32v1
 
 build_method="manual"
 build_method="e3sm_unified"
 
-if [ "${build_method}" = "manual" ];
+if ! test -d ${host_proc}/grids2/${RRMgrid}; then mkdir -p ${host_proc}/grids2/${RRMgrid}; fi
+cd ${host_proc}/grids2/${RRMgrid}
+
+
+# ======================================================================================================
+if [ "${build_method}" = "manual" ]; then
 # old: install it by yourself
 SQuadGen_dir="/p/lustre2/zhang73/GitTmp/SourceCode"
 
@@ -22,12 +35,19 @@ conda create --name all_stable26 -c conda-forge nco ncl ncview cdo imagemagick t
 conda activate all_stable26
 fi 
 
-if [ "${build_method}" = "e3sm_unified" ];
+
+# ======================================================================================================
+if [ "${build_method}" = "e3sm_unified" ]; then
 # new Chris G: We use SQuadGen which is available as part of E3SM Unified and refine over a rotated rectangular region using command line options:
+if [ "${mach}" == "LC" ]; then
 source /usr/workspace/e3sm/apps/e3sm-unified/load_latest_e3sm_unified_dane.sh  # need e3sm group
 module load gcc/13.3.1
 module load mvapich2/2.3.7
 module load ncl
+fi 
+if [ "${mach}" == "perlm" ]; then
+source /global/common/software/e3sm/anaconda_envs/load_e3sm_unified_1.11.0_pm-cpu.sh
+fi 
 
 SQuadGen_bin=SQuadGen
 fi 

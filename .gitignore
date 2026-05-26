@@ -41,10 +41,11 @@ _minted*
 *.swp
 *.swo
 
+*.pdf
+*.tex
+
 # =========================
 # Keep source/output files
 # =========================
-!*.tex
 !*.bib
 !*.png
-!*.pdf
