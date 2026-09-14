@@ -4,7 +4,7 @@
 Usage:
   python3 _tool.tex_to_md.py INPUT.tex [OUTPUT.md] [--bbl REFERENCES.bbl]
 
-If OUTPUT is omitted, the script writes INPUT_stem_confluence.md.
+If OUTPUT is omitted, the script writes INPUT_stem.md.
 If --bbl is omitted, the script uses INPUT_stem.bbl when it exists.
 """
 
@@ -324,7 +324,7 @@ def convert_tex(tex_path: Path, out_path: Path, bbl_path: Optional[Path], includ
         toc.append((2, "references", "References"))
 
     md = "# " + title + "\n\n"
-    md += f"_Converted from `{tex_path.name}` for LLNL Confluence-compatible Markdown._\n\n"
+    md += f"_Converted from `{tex_path.name}` to Markdown._\n\n"
     if include_toc:
         md += render_toc(toc)
     md += "\n".join(lines)
@@ -347,7 +347,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     tex_path = args.input
-    out_path = args.output or tex_path.with_name(tex_path.stem + "_confluence.md")
+    out_path = args.output or tex_path.with_name(tex_path.stem + ".md")
     bbl_path = args.bbl
     if bbl_path is None:
         candidate = tex_path.with_suffix(".bbl")

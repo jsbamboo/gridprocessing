@@ -1,5 +1,8 @@
 #!/bin/bash
+set -uo pipefail
 
+
+main() {
 # Template script for nudging data generation from ERA5 pressure level data on perlmutter:
 #     source directory: /global/cfs/projectdirs/m3522/cmip6/ERA5/. For the data stored 
 #     there, each file has a main variable and several time steps.
@@ -27,16 +30,48 @@ fi
 ls ${mapfile}
 
 env_unified="/global/common/software/e3sm/anaconda_envs/load_e3sm_unified_1.10.0_pm-cpu.sh"
-source $env_unified
+restore_nounset=false
+if [[ $- == *u* ]]; then
+  restore_nounset=true
+  set +u
+fi
+source "$env_unified"
+if [[ "${restore_nounset}" == "true" ]]; then
+  set -u
+fi
 
 time_range='20240401-20241231'
 time_range='20250101-20251231'
 time_range='20260101-20260131' #need to prepare one day more!!!
+# time_range='20200101-20231231'
+#time_range='20231001-20231231'
+#time_range='20221001-20221231'
+time_range='20200101-20251231' #check
+time_range='20220101-20231231' #check
+time_range='20220101-20241231' #check 2
 
 # do_step="v1" #by default run both v0 and v1 steps (v0 is the predecessor of v1)
 
+
+control_tag="normal" # normal | force_gen
+# control_tag="force_gen" # normal | force_gen
+
 # END USER DEFINED SETTINGS
 ########################################################
+force_gen=false
+if [[ "${control_tag}" == "force_gen" ]]; then
+  force_gen=true
+elif [[ "${control_tag}" != "normal" ]]; then
+  echo "ERROR: unsupported control_tag=${control_tag}; use normal or force_gen." >&2
+  exit 1
+fi
+
+if (( timefreq <= 0 || 24 % timefreq != 0 )); then
+  echo "ERROR: timefreq must be a positive divisor of 24; got ${timefreq}." >&2
+  exit 1
+fi
+expected_time_count=$((24 / timefreq))
+
 
 start_date=${time_range%-*}
 case_t0_start=$(date -d "${start_date}" +"%Y-%m-%d")"-00000"
@@ -80,11 +115,28 @@ time_tag=${iy_fmt}${im_fmt}${id_fmt}
 case_t0="${iy_fmt}-${im_fmt}-${id_fmt}-00000"
 time_units='hours since '${iy_fmt}-${im_fmt}-${id_fmt}' 00:00:00'
 
+# EAMxx nudging input uses a no-leap calendar, so never generate February 29,
+# including in Gregorian leap years.  Also skip impossible dates such as
+# February 30, which can otherwise leave partial files.
+if [[ "${im_fmt}${id_fmt}" == "0229" ]]; then
+  echo "Skip no-leap-calendar date ${time_tag}."
+  continue
+fi
+if ! valid_time_tag=$(date -d "${iy_fmt}-${im_fmt}-${id_fmt}" +%Y%m%d 2>/dev/null) ||
+   [[ "${valid_time_tag}" != "${time_tag}" ]]; then
+  continue
+fi
+
 echo "case_t0 = $case_t0"
 echo "time_units = $time_units"
 echo "time_tag = $time_tag"
 
 #-------------------------------------------------------------------------------------------------------------
+outfile_v0=${drc_out}/era5p_${TR_flag}_L${nlev}.${time_tag}.${timefreq}h.nc
+v0_regenerated=false
+
+if should_regen_nc "${outfile_v0}" "U,V,T,Q,PS" false; then
+  v0_regenerated=true
 # if [[ "${do_step}" = "v0" ]];then 
   echo "---- Start generating data on ${time_tag} (v0) ----"
 
@@ -124,14 +176,27 @@ echo "time_tag = $time_tag"
   ncremap --vrt_fl=${vert_coord} -i  ${drc_out}/tmp/era5p_${TR_flag}_plev.${time_tag}.${timefreq}h.nc -o ${drc_out}/era5p_${TR_flag}_L${nlev}.${time_tag}.${timefreq}h.nc
   echo "done. vertical interpolation."
 
+  if nc_file_needs_regen "${outfile_v0}" "U,V,T,Q,PS" false; then
+    echo "ERROR: regenerated v0 file failed validation: ${outfile_v0}" >&2
+    exit 1
+  fi
+
   echo -e "v0 ---- ${drc_out}/era5p_${TR_flag}_L${nlev}.${time_tag}.${timefreq}h.nc was generated ----\n"
 # fi 
+else
+  echo "Already generated ${outfile_v0}, skip ..."
+fi
 #-------------------------------------------------------------------------------------------------------------
+
+out_fl="era5p_${TR_flag}_L${nlev}.${time_tag}.${timefreq}h"
+outfile_v1=${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
+
+if [[ "${v0_regenerated}" == "true" ]] ||
+   should_regen_nc "${outfile_v1}" "U,V,T_mid,qv,PS,p_mid" true; then
 
 # if [[ "${do_step}" = "v1" ]];then 
   echo "---- Continue generating data on ${time_tag} (v1) ----"
 
-  out_fl="era5p_${TR_flag}_L${nlev}.${time_tag}.${timefreq}h"
 
   ncpdq -O -a ncol,lev  ${drc_out}/${out_fl}.nc  ${drc_out}/${out_fl}.ncpdq.nc
 
@@ -156,12 +221,100 @@ echo "time_tag = $time_tag"
   
   ncks -O -5 ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc  ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc
 
+  if nc_file_needs_regen "${outfile_v1}" "U,V,T_mid,qv,PS,p_mid" true; then
+    echo "ERROR: regenerated v1 file failed validation: ${outfile_v1}" >&2
+    exit 1
+  fi
+
   echo -e "v1 ---- ${drc_out}/${out_fl}.ncpdq_FillValue.v1.nc was generated ----\n"
 # fi 
+else
+  echo "Already generated ${outfile_v1}, skip ..."
+fi
+
 # exit 1
 done #id
 done #im
 # exit 1
 done #iy
 rm -rf ${drc_out}/tmp/
+}
 
+
+nc_file_needs_regen() {
+  local nc_file="$1"
+  local required_vars="$2"
+  local require_zero_origin="$3"
+
+  if [ ! -f "${nc_file}" ]; then
+    return 0
+  fi
+
+  if ! command -v ncdump >/dev/null 2>&1; then
+    echo "ERROR: ncdump is required to validate existing NetCDF files: ${nc_file}" >&2
+    exit 1
+  fi
+
+  if ! ncdump -h "${nc_file}" >/dev/null 2>&1; then
+    echo "Existing file is not readable by ncdump, regenerate: ${nc_file}"
+    return 0
+  fi
+
+  if ! ncks -m -v "${required_vars}" "${nc_file}" >/dev/null 2>&1; then
+    echo "Existing file lacks one or more required variables (${required_vars}), regenerate: ${nc_file}"
+    return 0
+  fi
+
+  # --trd emits one easy-to-parse record per value, e.g. time[1]=3.
+  # Verify the count and strictly increasing, uniform spacing.  For v1 the
+  # daily time coordinate must additionally be relative to midnight (start 0).
+  if ! ncks --trd -H -C -v time "${nc_file}" 2>/dev/null | awk \
+    -v expected_count="${expected_time_count}" \
+    -v expected_step="${timefreq}" \
+    -v require_zero="${require_zero_origin}" '
+      BEGIN { count=0; bad=0 }
+      /^[[:space:]]*time\[[0-9]+\][[:space:]]*=/ {
+        value=$0
+        sub(/^[^=]*=[[:space:]]*/, "", value)
+        sub(/[[:space:]]*$/, "", value)
+        if (value !~ /^[-+]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][-+]?[0-9]+)?$/) {
+          bad=1
+          next
+        }
+        value += 0
+        if (count == 0) {
+          first=value
+        } else if (value - previous != expected_step) {
+          bad=1
+        }
+        previous=value
+        count++
+      }
+      END {
+        if (count != expected_count) bad=1
+        if (require_zero == "true" && (count == 0 || first != 0)) bad=1
+        exit(bad ? 1 : 0)
+      }
+    '; then
+    echo "Existing file has an invalid time axis (expected ${expected_time_count} values spaced ${timefreq} hours apart), regenerate: ${nc_file}"
+    return 0
+  fi
+
+  return 1
+}
+
+
+should_regen_nc() {
+  local nc_file="$1"
+  local required_vars="$2"
+  local require_zero_origin="$3"
+
+  if [[ "${force_gen}" == "true" ]]; then
+    echo "force_gen=true, regenerate: ${nc_file}"
+    return 0
+  fi
+
+  nc_file_needs_regen "${nc_file}" "${required_vars}" "${require_zero_origin}"
+}
+
+main "$@"

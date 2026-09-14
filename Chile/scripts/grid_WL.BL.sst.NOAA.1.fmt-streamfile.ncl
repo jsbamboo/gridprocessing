@@ -62,7 +62,7 @@ print(time_in@actual_range)
 time=(/time_in - time_in(0) + 0.5/) ;let the first time to be 12:00 UTC in the first day
 time@units="days since "+start_year+"-"+start_month+"-"+start_day+" 00:00:00"
 print(time@units)
-time@calendar = "365_day"
+; time@calendar = "365_day"  ; set only after removing February 29
 time!0="time"
 time@long_name="time"
 time&time=time
@@ -143,7 +143,21 @@ fout->ice_cov= ice_cov
 
 if(dimsizes(time).gt.365)then 
 print("... convert leap to noleap year ...")
-command_cut_to_noleap = systemfunc("ncks -F -d time,1,59 -d time,59 -d time,60,365 "+fout+" "+dir+filo_noleap)
+delete(fout)  ; close and flush the output file before running NCO
+command_cut_to_noleap = "ncks -O -F -d time,1,59 -d time,61,366 " \
+                      + dir+filo + " " + dir+filo_noleap
+print(command_cut_to_noleap)
+system(command_cut_to_noleap)
+command_reset_time = "ncap2 -O -s 'time[$time]=array(0.5,1.0,$time)' " \
+                   + dir+filo_noleap + " " + dir+filo_noleap
+print(command_reset_time)
+system(command_reset_time)
+; ncap2 array assignment removes time attributes, so restore them as well.
+command_set_calendar = "ncatted -O -a calendar,time,o,c,365_day " \
+                     + "-a units,time,o,c,'" + time@units + "' " \
+                     + "-a long_name,time,o,c,time " + dir+filo_noleap
+print(command_set_calendar)
+system(command_set_calendar)
 end if 
 
 end
